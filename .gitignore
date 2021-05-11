@@ -2,3 +2,10 @@
 .Rhistory
 .RData
 .Ruserdata
+
+default.css
+xaringan-themer.css
+
+*.html
+*.js
+*.png

@@ -1,0 +1,301 @@
+---
+title: "Good Code Practices"
+subtitle: "with a focus on R"
+author: "Chris Grandin"
+institute: "DFO"
+date: "Slides compiled on `r Sys.Date()`"
+output:
+  xaringan::moon_reader:
+    css: ["default", "xaringan-themer.css", "inline-code.css"]
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      #ratio: 16:9
+header-includes:
+  - \usepackage{animate}
+---
+
+background-image: url(obi-wan.jpg)
+background-size: contain
+
+```{r setup, include=FALSE, echo=FALSE, fig.width=8, fig.height=8}
+# paste this into the console before running `xaringan::inf_mr("twg_01.Rmd")`
+# to make your entries faster (fraction of a second)
+# options(servr.interval = 0.1)
+
+fig_asp <- 0.618
+fig_width <- 9
+fig_out_width <- "6in"
+fig_dpi <- 180
+fig_align <- "center"
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  comment = "#>",
+  fig.asp = fig_asp,
+  fig.width = fig_width,
+  fig.path = "_bookdown_files/knitr-cache/",
+  cache.path = "_bookdown_files/knitr-cache/",
+  echo = FALSE,
+  cache.comments = FALSE,
+  dev = "png",
+  dpi = fig_dpi,
+  fig.align = fig_align
+)
+
+options(htmltools.dir.version = FALSE)
+library(dplyr)
+library(ggplot2)
+library(gfplot)
+
+ggplot2::theme_set(theme_pbs())
+```
+
+```{r xaringan-themer, include=FALSE, warning=FALSE}
+library(xaringanthemer)
+style_mono_accent(
+  base_color = "#1c5253",# Matte green
+  #base_color = "#cc6600ff", # Fall orange
+  header_font_google = google_font("Josefin Sans"),
+  text_font_google   = google_font("Montserrat", "300", "300i"),
+  code_font_google   = google_font("Fira Mono")
+)
+```
+
+---
+class: center, middle, inverse
+
+# The Basics
+
+---
+class: center
+
+### R is not an ideal language for learning
+
+.left[
+- Poor help pages. One example is the most basic function **print()**
+
+```{r print-help, echo=TRUE, eval=FALSE}
+?print
+```
+>print prints its argument and returns it invisibly (via invisible(x)). It is a generic function which means that new printing methods can be easily added for new classes.
+
+- Inconsistent function names:
+  - **names()** vs **colnames()**
+  - **row.names()** vs **rownames()**
+  - **Sys.time()** vs **system.time()**
+  
+- Inconsistent variable naming syntax is used in the R source code:
+  - **SpatialArea** *CamelCase*
+  - **spatial_area** *underscore-seperated*
+  - **spatialArea** *backCase*
+  - **spatial.area** *dotted*
+  - **spatial_Area.new** *some combination (the worst)*
+]
+
+---
+class: center
+
+### Variable naming syntax
+
+.left[
+Even in the R base source code there are examples of bad naming. The **data.frame()** function
+has arguments with two different types of naming syntax and a function call with a different syntax:
+
+```{r data-frame-ex, echo=TRUE, size="tiny"}
+data.frame
+```
+]
+
+
+---
+class: center
+
+### Variable naming syntax (2)
+
+.left[
+Never use dotted variable naming syntax. Dotted syntax is reserved for custom class functions based on other generic functions.
+]
+.pull-left[.left[
+```{r dotted-syntax, echo = TRUE, eval = FALSE}
+j <- c(1:10)
+par(mar = c(2, 2, 0, 0))
+plot(j, type = "l", lwd = 3, col = "blue")
+```
+]]
+.pull-right[
+```{r plot-dotted-syntax, ref.label="dotted-syntax", echo = FALSE}
+```
+]
+.pull-left[.left[
+```{r dotted-syntax-2, echo = TRUE, eval = FALSE}
+class(j) <- "reverse_series"
+plot.reverse_series <- function(d, ...){
+  plot.default(rev(d), ...)
+}
+par(mar = c(2, 2, 0, 0))
+plot(j, type = "l", lwd = 3, col = "blue")
+```
+]]
+.pull-right[
+```{r plot-dotted-syntax-2, ref.label="dotted-syntax-2", echo = FALSE}
+```
+]
+
+---
+class: center, middle
+# We can do better ...
+
+---
+class: center
+
+### Style suggestions
+
+.left[
+We may have to live with the non-adherence of variable naming present in R's base code and that of some package developers, but we can and should follow best practices for variable naming syntax.
+
+I follow *Hadley Wickam's Style Guide*:
+
+**http://adv-r.had.co.nz/Style.html**
+
+The main points are:
+- Use all lowercase letters for variable names, with words being separated by underscores. Do not use capital letters
+- Place spaces around all operators (**+**, **-**, **/** , *****, **=**, **,**, **%in%**). This includes array indexing, e.g `dat[1, , 2]`
+- Opening curly brace should never go on it's own line
+- Indent two spaces inside functions, if conditionals, and for loops
+- Place a space before left parenthesis unless it is a function call
+- use **<-** for assignment, not **=**
+]
+
+---
+class: center
+
+### Style suggestions (2)
+
+.left[
+Example of good code style:
+```{r good-code-style, echo = TRUE, eval = FALSE}
+latex_mlc <- function(latex_vec, make_bold = TRUE, math_bold = FALSE){
+  if(make_bold){
+    if(math_bold){
+      latex_vec <- sapply(latex_vec, latex_math_bold)
+    }else{
+      latex_vec <- sapply(latex_vec, latex_bold)
+    }
+  }
+  latex_str <- paste(latex_vec, collapse = latex_nline)
+  paste0("\\mlc{", latex_str, "}")
+}
+```
+Note that **if()** and **for()** are functions so there should be no space before the left parenthesis.
+]
+
+---
+class: center
+
+### Style suggestions (3)
+
+.left[
+Example of good code style using dplyr and pipes (`%>%`) mixed with ggplot and `+`:
+]
+.pull-left[.left[
+```{r good-code-style-pipes, echo = TRUE, eval = FALSE}
+library(dplyr)
+library(ggplot2)
+mtcars %>% 
+  mutate(am = ifelse(am == 0,
+                     "Automatic",
+                     "Standard")) %>% 
+  ggplot(aes(x = am, y = hp)) +
+  geom_point() + 
+  labs(y = "Gross horsepower",
+       x = "Transmission")
+```
+]]
+.pull-right[
+```{r plot-good-code-style-pipes, ref.label = 'good-code-style-pipes', echo = FALSE}
+```
+]
+.left[
+Always place new items piped with `%>%` or added to ggplots with `+` on their own line:
+  - Much easier to read
+  - Allows them to be commented out easily
+  - Less possibility of wrapping code past the end of the window frame
+
+Other functions with multiple arguments should have their arguments on their own lines as well. See the `ifelse()` in the above example.
+]
+
+---
+class: center
+
+# Variables can be any type ...
+
+---
+class: center
+
+### Variable typing
+
+.left[
+In most computer languages, variables are **strongly typed**. Here is an example in C++:
+
+```{c++ example-string-typing, echo = TRUE, eval = FALSE}
+#include <iostream>
+using namespace std;
+
+double mult(double a, double b){
+  double r;
+  r = a * b;
+  return r;
+}
+
+int main (){
+  double z;
+  z = mult(5, 3);
+  cout << "The result is " << z;
+}
+```
+In this code, *ALL* variables are given a datatype that they must adhere to, including the return value from the function.
+This makes coding easier, because the compiler will tell you right away if you make a call to the function with an erroneous type.
+]
+
+---
+class: center
+
+### Variable typing (2)
+
+.left[
+In R, variables are **weakly typed**. In addition, R is **interpreted**, not **compiled** so you will not know there is a problem until your code runs to that point. This could take a long time, and then require fixing and re-running again to that point to ensure it is working.
+
+```{r example-string-typing-r, echo = TRUE, eval = TRUE}
+mult <- function(a, b){
+  r <- a * b
+  r
+}
+mult(5, 3)
+```
+In this code, variables are typed and they could be anything. If we try to run the code with a different type something possibly unexpected occurs:
+```{r mult-data-frame, echo = TRUE, eval = TRUE}
+d <- data.frame(j = c(1, 2, 3), k = c(4, 5, 6))
+mult(5, d)
+```
+Well, maybe that isn't so bad, but as the author of the function have you though of what will happen with **every** data type and dimension of those data types? What about this (nect page)
+]
+
+---
+class: center
+
+### Variable typing (3)
+.left[
+```{r mult-mat, echo = TRUE, eval = TRUE, error=TRUE}
+k <- data.frame(j = c(1, 2, 3), k = c(4, 5, 6), i = c(10, 11, 12))
+mult(d, k)
+```
+
+This is obvious here, but when errors like this happen inside someone else's package it is frustrating.
+
+These errors can be caught at the beginning of the function by checking all the variables for correct type.
+]
+

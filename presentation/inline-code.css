@@ -1,0 +1,16 @@
+.remark-slide-content {
+  font-size: 20px;
+  padding: 20px 80px 20px 80px;
+}
+.remark-code, .remark-inline-code {
+  background: #f0f0f0;
+}
+.remark-code {
+  font-size: 12px;
+}
+.huge {
+  font-size: 200%;
+}
+.tiny {
+  font-size: 50%;
+}
