@@ -229,7 +229,7 @@ Other functions with multiple arguments should have their arguments on their own
 ]
 
 ---
-class: center
+class: center, middle
 
 # Variables can be any type ...
 
@@ -241,7 +241,7 @@ class: center
 .left[
 In most computer languages, variables are **strongly typed**. Here is an example in C++:
 
-```{c++ example-string-typing, echo = TRUE, eval = FALSE}
+```{r example-string-typing, engine = 'Rcpp', echo = TRUE, eval = FALSE}
 #include <iostream>
 using namespace std;
 
@@ -276,26 +276,136 @@ mult <- function(a, b){
 }
 mult(5, 3)
 ```
-In this code, variables are typed and they could be anything. If we try to run the code with a different type something possibly unexpected occurs:
+In this code, variables are not typed and they could be anything. If we try to run the code with a different type than intended something possibly unexpected occurs:
 ```{r mult-data-frame, echo = TRUE, eval = TRUE}
 d <- data.frame(j = c(1, 2, 3), k = c(4, 5, 6))
 mult(5, d)
 ```
-Well, maybe that isn't so bad, but as the author of the function have you though of what will happen with **every** data type and dimension of those data types? What about this (nect page)
 ]
 
 ---
 class: center
 
 ### Variable typing (3)
+
 .left[
+Well, maybe that wasn't so bad, but as the author of the function have you thought of what will happen with **every** data type and dimension of those data types? What about this:
 ```{r mult-mat, echo = TRUE, eval = TRUE, error=TRUE}
 k <- data.frame(j = c(1, 2, 3), k = c(4, 5, 6), i = c(10, 11, 12))
 mult(d, k)
 ```
 
-This is obvious here, but when errors like this happen inside someone else's package it is frustrating.
+This is obvious here, but when errors like this happen inside a function in someone else's package can be very frustrating. It can mean that you have to download the package source and debug the package.
 
-These errors can be caught at the beginning of the function by checking all the variables for correct type.
+These errors can be caught at the beginning of the function by checking all the variables for correct type and dimension. This is called **Argument verification**
 ]
 
+---
+class: center
+
+### Argument verification
+
+.left[
+To emulate strongly typed languages, we can check all the arguments in a function. This involves comparing the class, length, and/or dimension of arguments with some known value. The following will produce no errors.
+
+```{r argument-checking, echo = TRUE, eval = TRUE}
+library(checkargs)
+test_func <- function(d = NULL, a = NULL, b = NULL){
+  # Check that d is a data frame with 3 rows and two columns
+  check_arg(d, chk_class = "data.frame", chk_dim = c(3, 2))
+
+  # Check that a is a vector of numbers of length 10
+  check_arg(a, chk_class = c("integer", "numeric"), chk_len = 10)
+
+  # Check that b is a tibble with 3 rows and two columns
+  check_arg(b, chk_class = "tbl_df", chk_dim = c(3, 2))
+  
+  # Actual function code would go here
+  invisible()
+}
+
+test_func(d = data.frame(j = c(1, 2, 3), k = c( 4, 5, 6)),
+          a = 1:10,
+          b = tibble::tibble(j = c(1, 2, 3), k = c(4, 5, 6)))
+
+```
+]
+
+---
+class: center
+
+### Argument verification (2)
+
+.left[
+Now, calling the function with the wrong length numerical vector we get an error explaining the issue:
+```{r argument-checking-error1, echo = TRUE, eval = TRUE, error = TRUE}
+test_func(d = data.frame(j = c(1, 2, 3), k = c( 4, 5, 6)),
+          a = 1:11,
+          b = tibble::tibble(j = c(1, 2, 3), k = c(4, 5, 6)))
+```
+This time, the data frame is the wrong dimension:
+```{r argument-checking-error2, echo = TRUE, eval = TRUE, error = TRUE}
+test_func(d = data.frame(j = c(1, 2), k = c( 4, 5)),
+          a = 1:10,
+          b = tibble::tibble(j = c(1, 2, 3), k = c(4, 5, 6)))
+```
+Now, send a variable valued `NULL`:
+```{r argument-checking-error3, echo = TRUE, eval = TRUE, error = TRUE}
+test_func(d = NULL,
+          a = 1:10,
+          b = tibble::tibble(j = c(1, 2, 3), k = c(4, 5, 6)))
+```
+]
+
+---
+class: center, middle, inverse
+
+# Setting up your project
+
+---
+class: center
+
+### Paths and portability
+
+.left[
+**Never** have lines like this in your project, it will break on any other machine and cause a high degree of frustration for those folks trying to use it.
+```{r bad-path, echo = TRUE, eval = FALSE}
+my_path <- "C:\\Users\\grandinc\\Data\\Projects\\2021"
+```
+The correct way to set up paths for your project is to use the `here` package. The `here::here()` function performs a search for the following to find the root directory of your project:
+
+- contains a file .here
+- contains a file matching [.]Rproj$ with contents matching ^Version: in the first line
+- contains a file DESCRIPTION with contents matching ^Package:
+- contains a directory .git
+
+The function `here::dr_here()` tells you why your project root directory was chosen.
+]
+
+---
+class: center
+
+### Paths and portability (2)
+
+.left[
+Suppose you want to load a csv file from the **data** directory which is a subdirectory of the directory containing the **.here** file (i.e. the root directory):
+```{r load-csv, echo = TRUE, eval = FALSE}
+dat <- readr::read_csv(file = here::here("data", "datafile.csv"))
+```
+
+If you use `here::here()` everywhere in your project you can be assured it will run on everyone else's machine, regardless of which directory they place the project in.
+
+You can also use `file.path()` with a pre-stored data directory variable:
+```{r load-csv2, echo = TRUE, eval = FALSE}
+data_dir <- here::here("data")
+# Later on in the code ...
+dat <- readr::read_csv(file = file.path(data_dir, "datafile.csv"))
+```
+
+These functions are portable across platforms, so that you don't have to paste together paths using the path separator like this:
+```{r bad-path-method, echo = TRUE, eval = FALSE}
+# BAD!
+dat <- readr::read_csv(file = paste0(root_dir, "/data/datafile.csv"))
+```
+
+]
