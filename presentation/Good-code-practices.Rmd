@@ -73,27 +73,106 @@ class: center, middle, inverse
 ---
 class: center
 
-### R is not an ideal language for learning
+### R is hard to learn
 
 .left[
 - Poor help pages. One example is the most basic function **print()**
 
-```{r print-help, echo=TRUE, eval=FALSE}
+```{r print-help, echo = TRUE, eval = FALSE}
 ?print
 ```
 >print prints its argument and returns it invisibly (via invisible(x)). It is a generic function which means that new printing methods can be easily added for new classes.
 
+- **R** is mainly a functional language. Most languages are procedural, which are more intuitive
+  - In a procedural language, a vector or data frame would be passed to a function where calculations would be performed on it using nested loops
+  - In a functional language, functions can be *applied* to each element, row, or column of data
+  - If you are not *applying* functions like this, you are not harnessing R's functional power
+
+- **C++** is a procedural language with some functional abilities
+- **R** is a functional language with some procedural abilities
+]
+
+---
+class: center
+
+### R is hard to learn (2)
+.left[
+Matrices and data.frames are not the same, they are stored internally in two completely different ways
+- data.frames are stored as a list of columns (which are vectors)
+- matrices are stored as a sequential 1-dimensional vector with dimension information so R knows how to break the vector up into 2-dimensions
+- because of this, matrices are much faster for math operations
+- data.frames use `names()` to get or set the column names
+- matrices use `colnames()` to get or set the column names
+  
+A matrix is a linear vector
+```{r matrix-impl,echo = TRUE, eval = TRUE}
+mat <- matrix(1:9, nrow = 3)
+print(mat)
+
+lobstr::sxp(mat)
+```
+]
+
+---
+class: center
+
+### R is hard to learn (3)
+.left[
+A data.frame is a list of column data
+```{r dataframe-impl,echo = TRUE, eval = TRUE}
+df <- data.frame(x = c(1, 2, 3), y = c(4, 5, 6), z = c(7, 8, 9))
+print(df)
+
+lobstr::sxp(df)
+```
+Some functions designed to work with data.frames will fail with matrices, and vice-versa. Worse, some may succeed but give you the wrong output.
+
+]
+
+---
+class: center
+
+### R is hard to learn (4)
+
+.left[
 - Inconsistent function names:
-  - **names()** vs **colnames()**
-  - **row.names()** vs **rownames()**
-  - **Sys.time()** vs **system.time()**
+  - `names()` vs `colnames()`
+  - `row.names()` vs `rownames()`
+  - `Sys.time()` vs `system.time()`
   
 - Inconsistent variable naming syntax is used in the R source code:
-  - **SpatialArea** *CamelCase*
-  - **spatial_area** *underscore-seperated*
-  - **spatialArea** *backCase*
-  - **spatial.area** *dotted*
-  - **spatial_Area.new** *some combination (the worst)*
+  - `SpatialArea` *CamelCase*
+  - `spatial_area` *underscore-seperated*
+  - `spatialArea` *backCase*
+  - `spatial.area` *dotted*
+  - `spatial_Area.new` *some combination of styles*
+]
+
+---
+class: center
+
+### There are no operators
+
+.left[
+There are no operators in R, only functions. For example
+```{r operators, echo = TRUE, eval = TRUE}
+5 + 8 * 10
+```
+is actually called like this by R
+```{r non-operators, echo = TRUE, eval = TRUE}
+`+`(5, `*`(8, 10))
+```
+To prove this, look at the Abstract Syntax Trees (ASTs) that R creates when it parses an expression like this:
+.pull-left[
+```{r ast-operators, echo = TRUE, eval = TRUE}
+lobstr::ast({5 + 8 * 10})
+```
+]
+.pull-right[
+```{r ast-non-operators, echo = TRUE, eval = TRUE}
+lobstr::ast({`+`(5, `*`(8, 10))})
+```
+]
 ]
 
 ---
@@ -130,6 +209,7 @@ plot(j, type = "l", lwd = 3, col = "blue")
 ```{r plot-dotted-syntax, ref.label="dotted-syntax", echo = FALSE}
 ```
 ]
+--
 .pull-left[.left[
 ```{r dotted-syntax-2, echo = TRUE, eval = FALSE}
 class(j) <- "reverse_series"
@@ -146,8 +226,8 @@ plot(j, type = "l", lwd = 3, col = "blue")
 ]
 
 ---
-class: center, middle
-# We can do better ...
+class: center, middle, inverse
+# Standardizing your syntax style
 
 ---
 class: center
@@ -164,7 +244,7 @@ I follow *Hadley Wickam's Style Guide*:
 The main points are:
 - Use all lowercase letters for variable names, with words being separated by underscores. Do not use capital letters
 - Place spaces around all operators (**+**, **-**, **/** , *****, **=**, **,**, **%in%**). This includes array indexing, e.g `dat[1, , 2]`
-- Opening curly brace should never go on it's own line
+- Opening curly brace should never go on its own line
 - Indent two spaces inside functions, if conditionals, and for loops
 - Place a space before left parenthesis unless it is a function call
 - use **<-** for assignment, not **=**
@@ -178,19 +258,23 @@ class: center
 .left[
 Example of good code style:
 ```{r good-code-style, echo = TRUE, eval = FALSE}
-latex_mlc <- function(latex_vec, make_bold = TRUE, math_bold = FALSE){
+latex_mlc <- function(latex_vec,
+                      make_bold = TRUE,
+                      math_bold = FALSE){
   if(make_bold){
     if(math_bold){
-      latex_vec <- sapply(latex_vec, latex_math_bold)
+      latex_vec <- purrr::map_chr(latex_vec, latex_math_bold)
     }else{
-      latex_vec <- sapply(latex_vec, latex_bold)
+      latex_vec <- purrr::map_chr(latex_vec, latex_bold)
     }
   }
   latex_str <- paste(latex_vec, collapse = latex_nline)
   paste0("\\mlc{", latex_str, "}")
 }
 ```
-Note that **if()** and **for()** are functions so there should be no space before the left parenthesis.
+Note that
+- **if()** and **for()** are functions so there should be no space before the left parenthesis
+- the argument list has each argument on it's own line. This is easier to read and allows easy commenting-out of individual arguments
 ]
 
 ---
@@ -229,9 +313,9 @@ Other functions with multiple arguments should have their arguments on their own
 ]
 
 ---
-class: center, middle
+class: center, middle, inverse
 
-# Variables can be any type ...
+# Variable Typing
 
 ---
 class: center
@@ -306,7 +390,7 @@ class: center
 ### Argument verification
 
 .left[
-To emulate strongly typed languages, we can check all the arguments in a function. This involves comparing the class, length, and/or dimension of arguments with some known value. The following will produce no errors.
+To emulate strongly typed languages, we can check all the arguments in a function. This involves comparing the class, length, and/or dimension of arguments with some known value. The following code will produce no errors.
 
 ```{r argument-checking, echo = TRUE, eval = TRUE}
 library(checkargs)
@@ -339,13 +423,13 @@ class: center
 .left[
 Now, calling the function with the wrong length numerical vector we get an error explaining the issue:
 ```{r argument-checking-error1, echo = TRUE, eval = TRUE, error = TRUE}
-test_func(d = data.frame(j = c(1, 2, 3), k = c( 4, 5, 6)),
+test_func(d = data.frame(j = c(1, 2, 3), k = c(4, 5, 6)),
           a = 1:11,
           b = tibble::tibble(j = c(1, 2, 3), k = c(4, 5, 6)))
 ```
 This time, the data frame is the wrong dimension:
 ```{r argument-checking-error2, echo = TRUE, eval = TRUE, error = TRUE}
-test_func(d = data.frame(j = c(1, 2), k = c( 4, 5)),
+test_func(d = data.frame(j = c(1, 2), k = c(4, 5)),
           a = 1:10,
           b = tibble::tibble(j = c(1, 2, 3), k = c(4, 5, 6)))
 ```
@@ -372,7 +456,7 @@ class: center
 ```{r bad-path, echo = TRUE, eval = FALSE}
 my_path <- "C:\\Users\\grandinc\\Data\\Projects\\2021"
 ```
-The correct way to set up paths for your project is to use the `here` package. The `here::here()` function performs a search for the following to find the root directory of your project:
+One correct way to set up paths for your project is to use the `here` package. The `here::here()` function performs a search for the following to find the root directory of your project:
 
 - contains a file .here
 - contains a file matching [.]Rproj$ with contents matching ^Version: in the first line
@@ -407,5 +491,85 @@ These functions are portable across platforms, so that you don't have to paste t
 # BAD!
 dat <- readr::read_csv(file = paste0(root_dir, "/data/datafile.csv"))
 ```
+]
+
+---
+class: center, middle, inverse
+
+# Promises and the ellipsis argument (...)
+
+
+---
+class: center
+
+### Global variables are bad
+.left[
+  Global variables are not a good idea in any language 
+  - Any function can read or write to them which means the global state of the program can change in many ways at many times
+  - As the project complexity increases, keeping track of these changes becomes extremely
+  - Eventually, debugging becomes impossible
+]
+
+---
+class: center
+
+### *Promise already under evaluation* error
+.left[
+  Here is an example of some code which will cause a promise error
+  ```{r promise-error, echo = TRUE, eval = TRUE, error = TRUE}
+  add2 <- function(a, b){
+    a + b
+  }
+  a <- 10
+  b <- 20
+  add2_topower <- function(pow = 2, a = a, b = b){
+    add2(a, b) ^ pow
+  }
+  add2_topower()
+  ```
+  This is caused by default arguments being set with the form `j = j` in the function declaration and can be easily fixed by changing the argument name like this
+  ```{r fix-promise-error, echo = TRUE, eval = TRUE}
+  j <- function(a, b, func){
+    a + b
+  }
+  k <- function(my_j = j, a, b){
+    my_j(a, b)
+  }
+  k(a = 3, b = 4)
+  ```
+  This can be very difficult to fix properly if you pass these variables through several functions, because you don't want to come up with a new name for the argument in each one. It can get really confusing really fast. The best way to solve this issue is to use the ellipsis argument
+]
+
+---
+class: center
+
+### Fix promise error with the ellipsis argument
+.left[
+```{r fix-promise-error-ellipsis, echo = TRUE, eval = TRUE}
+j <- function(a, b){
+  a + b
+}
+k <- function(j, ...){
+  j(...)
+}
+k(j = j, a = 3, b = 4)
+```
 
 ]
+
+
+
+
+
+
+
+
+
+---
+class: center
+
+# Thank you!
+
+Click the GitHub cat for the source code used to build these slides
+
+<a href="https://github.com/cgrandin/good-code-practices" class="github-corner" aria-label="View source on Github"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#fff; color:#151513; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
