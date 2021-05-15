@@ -162,7 +162,10 @@ is actually called like this by R
 ```{r non-operators, echo = TRUE, eval = TRUE}
 `+`(5, `*`(8, 10))
 ```
-To prove this, look at the Abstract Syntax Trees (ASTs) that R creates when it parses an expression like this:
+Here, `` `r '\x60+\x60()'` `` and `` `r '\x60*\x60()'` `` are functions taking two arguments each. All operators are actually functions like this.
+To prove these two lines of code are equivalent, look at the Abstract Syntax Trees (ASTs) that R creates when it parses an expression like this:
+]
+.left[
 .pull-left[
 ```{r ast-operators, echo = TRUE, eval = TRUE}
 lobstr::ast({5 + 8 * 10})
@@ -173,6 +176,38 @@ lobstr::ast({5 + 8 * 10})
 lobstr::ast({`+`(5, `*`(8, 10))})
 ```
 ]
+]
+
+---
+class: center
+
+### `if`, `else`, and all left braces (`[`, `(`, and `{`) are functions
+
+.left[
+Almost everything in R is a function. This can help you when trying to understand code
+
+```{r simple-if-statement, echo = TRUE, eval = TRUE}
+t_or_f <- sample(c(TRUE, FALSE), size = 1)
+if(t_or_f){
+  x <- -9
+  y <- -99
+  z <- -999
+}else{
+  x <- 10
+  y <- 100
+  z <- 1000
+}
+
+paste0("t_or_f = ", t_or_f, ", x = ", x, ", y = ", y, ", z = ", z)
+```
+Can be written like this:
+```{r exotic-if-statement, echo = TRUE, eval = TRUE}
+if(t_or_f) `{`(x <- -9, y <- -99, z <- -999) else(`{`(x <- 10, y <- 100, z <- 1000))
+
+paste0("t_or_f = ", t_or_f, ", x = ", x, ", y = ", y, ", z = ", z)
+```
+This is because `if`, `else`, and `{` are all functions so an `if..else` statement is implemented as this:
+`if()`  `` `r '\x60{\x60()'` `` `` `r 'else(\x60{\x60())'` `` and `` `r '\x60{\x60()'` `` has each line of code inside as an argument.
 ]
 
 ---
@@ -227,7 +262,11 @@ plot(j, type = "l", lwd = 3, col = "blue")
 
 ---
 class: center, middle, inverse
-# Standardizing your syntax style
+# Standardizing your coding style
+
+> "Good coding style is like using correct punctuation. You can manage without it, but it sure makes things easier to read."
+> 
+> `r tufte::quote_footer('- Hadley Wickham')`
 
 ---
 class: center
@@ -505,7 +544,7 @@ class: center
 ### Global variables are bad
 .left[
   Global variables are not a good idea in any language 
-  - Any function can read or write to them which means the global state of the program can change in many ways at many times
+  - Any function can read or write to them which means the global state of the program can change in many ways at any time
   - As the project complexity increases, keeping track of these changes becomes extremely
   - Eventually, debugging becomes impossible
 ]
@@ -515,18 +554,19 @@ class: center
 
 ### *Promise already under evaluation* error
 .left[
-  Here is an example of some code which will cause a promise error
-  ```{r promise-error, echo = TRUE, eval = TRUE, error = TRUE}
-  add2 <- function(a, b){
-    a + b
-  }
-  a <- 10
-  b <- 20
-  add2_topower <- function(pow = 2, a = a, b = b){
-    add2(a, b) ^ pow
-  }
-  add2_topower()
-  ```
+Here is an example of some code which will cause a promise error
+```{r promise-error, echo = TRUE, eval = TRUE, error = TRUE}
+user_power <- function(val, pow){
+  val ^ pow
+}
+power_list <- function(lst, ...){
+  purrr::map_dbl(lst, function(list_item = .x, ...){
+    user_power(list_item, ...)
+  }, ...)
+}
+power_list(6:9, 3)
+```
+  
   This is caused by default arguments being set with the form `j = j` in the function declaration and can be easily fixed by changing the argument name like this
   ```{r fix-promise-error, echo = TRUE, eval = TRUE}
   j <- function(a, b, func){
@@ -557,11 +597,151 @@ k(j = j, a = 3, b = 4)
 
 ]
 
+---
+class: center, middle, inverse
+
+# Avoid using `for()` loops
+
+---
+class: center
+
+### `for()` loops should be avoided, use functional forms instead
+.left[
+Using `for()` loops come naturally to people familiar with procedural programming, and is more intuitive so newcomers to R tend to use them a lot.
+```{r for-loop, echo = TRUE, eval = TRUE}
+# Cube a vector of numbers
+output <- NULL
+for(x in 1:10){
+  output[x] <- x ^ 3
+}
+print(output)
+```
+The same loop using base R's `lapply` method:
+```{r sapply-loop, echo = TRUE, eval = TRUE}
+unlist(lapply(1:10, function(x){x ^ 3}))
+```
+The same loop using the package `purrr::map_dbl()` method:
+```{r map-loop, echo = TRUE, eval = TRUE}
+purrr::map_dbl(1:10, ~{.x ^ 3})
+```
+The `purrr::map_dbl` method allows use of `~` as a shorthand form for `function(x)` and each list element is assigned to `.x` by `purrr`.
+]
 
 
 
+---
+class: center
+
+### Tibbles
+.left[
+**tibbles** are just **data.frames** with some special output properties so that viewing them in the console is much nicer. To convert a data frame to a tibble, use `tibble::as_tibble()`.
+
+**tibbles** only show the first ten rows by default so the header doesn't run off the screen, and each column type is shown at the top. Seeing the column type is highly useful! Also, negative numbers are colored red (in RStudio).
+```{r convert-to-tibble, echo = TRUE, eval = TRUE}
+iris %>% as_tibble()
+```
+]
+
+---
+class: center
+
+### Tibbles (2)
+.left[
+Making a tibble from scratch is the same as making a `data.frame`. This code makes a tibble of random letters and numbers and plots the distribution of random letters drawn using `ggplot`:
+```{r make-tibble, echo = TRUE, eval = TRUE, out.height = 350}
+num_rows <- 1000
+
+# tibble::tibble(row = 1:num_rows,
+#                number = sample(1:50, num_rows, replace = TRUE),
+#                letter = letters[sample(1:26, num_rows, replace = TRUE)]) %>% 
+#   mutate(number = as.character(number)) %>% 
+#   tidyr::pivot_longer(cols = c("number", "letter"), names_to = "type", values_to = "value") %>% 
+#   ggplot2::ggplot(aes(x = value, y = type)) +
+#   ggplot2::geom_bar(fill = "#0000FF4D")
+```
+]
+
+---
+class: center
+
+### Using `purrr::map2()`
+.left[
+One thing that come up quite often is that you have a list of data frames that need the list index number appended to the individual data frames.
+
+One reason this happens is if you have N simulations and you want to append the simulation number to each data frame, and then merge those data frames into one large one so that the data are in the correct format for `ggplot` plots.
+```{r fake-sim, echo = TRUE, eval = FALSE}
+# Split the mtcars data frame by column `carb` into a list of data frames
+lst <- mtcars %>% 
+  tibble::as_tibble(rownames = "make") %>%
+  dplyr::group_by(carb) %>%
+  dplyr::group_split()
+
+df <- purrr::map2(lst, seq_along(lst), ~{
+  .x %>% dplyr::mutate(group_num = .y)
+}) %>% 
+  purrr::map_df(~{.x})
+
+print(df, n = 100)
+```
+]
+
+---
+class: center
+
+### Using `purrr::map2()`
+.left[
+```{r table-fake-sim, echo = FALSE, eval = TRUE, ref.label = "fake-sim"}
+```
+]
+
+---
+class: center
+
+### Using `map()` with ellipsis passed to internal functions
+.left[
+This is a common thing you need to do if you're using the `map()` functions but strangely there are no examples that I could find online for this. Using this method you can pass N arguments into the function which is applied to each element of the list.
+
+```{r map-ellipsis, echo = TRUE, eval = TRUE, error = TRUE}
+ultimate_power <- function(val, pow){
+  val ^ pow
+}
+power_list <- function(lst, ...){
+  purrr::map_dbl(lst, function(list_item = .x, ...){
+    ultimate_power(list_item, ...)
+  }, ...)
+}
+power_list(6:9, 3)
+```
+]
 
 
+---
+class: center
+
+### Power function is less efficient than multiplying
+.left[
+Squared operation
+```{r power-function-optim, echo = FALSE, eval = TRUE}
+loop_len <- 1000
+sz <- 100000
+a <- sample(1000, size = sz, replace = TRUE)
+f <- function (n) for (i in 1:n) d <- a ^ 2
+g <- function (n) for (i in 1:n) d <- a * a
+system.time(f(loop_len))
+system.time(g(loop_len))
+```
+Cubed operation
+```{r power-function-optim-2, echo = FALSE, eval = TRUE}
+a <- sample(1000, size = sz, replace = TRUE)
+f <- function (n) for (i in 1:n) d <- a ^ 3
+g <- function (n) for (i in 1:n) d <- a * a * a
+h <- function (n) for (i in 1:n) d <- (a ^ 2) * a
+system.time(f(loop_len))
+system.time(g(loop_len))
+system.time(h(loop_len))
+```
+Looking at the **user** time, the squared operation is faster than multiplying the number with itself. It is a special case of power which has been optimized in R. For higher degrees of power, it is much faster to use multiplication (7.8x faster) and the squared operation with multiplication (9.6x faster) rather than calculate using the power function (^) itself.
+]
 
 
 
