@@ -1,0 +1,35 @@
+---
+title: ""
+output: pdf_document
+date: "`r Sys.Date()`"
+#fontfamily: arial
+fontsize: 12pt
+#header-includes:
+#  - \usepackage{titling}
+#  - \pretitle{\begin{flushleft}}
+#  - \posttitle{\end{flushleft}}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# \textcolor{blue}{Good coding practices}
+## TESA Webinar
+## DATE: November 2022, TBD. 2 hours.
+## Virtual: Microsoft Teams
+### Chris Grandin and Andrew Edwards (Pacific Region)
+
+\
+
+Conducting modern stock assessments requires writing a lot of computer code. However, stock assessment scientists often lack formal training in this area. We will cover some general computational tips, rules of thumb, and recommendations. Given the language R is the language of choice for assessment scientists, we will also focus on specific problems in R, including a live debugging session and time for general questions.
+
+The outline of the session is:
+
+- 45 min talk, including real-time examples
+- 10 min of questions arising from the talk
+- 5 min break
+- live example of debugging
+- other general questions from the audience (along the lines of “the one thing that continually messes me up is …, what should I do?”).
+
+
