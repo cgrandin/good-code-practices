@@ -17,7 +17,7 @@ header-includes:
   - \usepackage{animate}
 ---
 
-background-image: url(obi-wan.jpg)
+background-image: url(img/obi-wan.jpg)
 background-size: contain
 
 ```{r setup, include=FALSE, echo=FALSE, fig.width=8, fig.height=8}
@@ -64,6 +64,221 @@ style_mono_accent(
   code_font_google   = google_font("Fira Mono")
 )
 ```
+
+---
+class: left
+
+### Outline
+
+- My background
+- Brief history of computation
+- Compilation vs. Interpretation
+- Indentation and syntax standards
+- Documentation
+- Directories and project control
+- Speed and algorithms
+
+---
+class: left
+
+### My background
+
+<div class = "portrait"; style="float:right;position: relative; top: -80px;">
+```{r chris-pic, eval = TRUE}
+knitr::include_graphics("img/chris-aquarius.jpg")
+```
+</div>
+
+- Grew up in Nanaimo, B.C. and still there
+- Started as a co-op student in 1999, and started full-time after finishing BSc.
+- BSc. in Computer Science in 2000 UVIC
+- MSc. in Earth & Ocean Science in 2006 (Ocean acoustics) UVIC
+- Have been in the Groundfish section at the Pacific Biological Station ever since
+- Started with database coding (Visual Basic for Applications & SQL)
+- In 2003, started work with the Inshore Rockfish program and did submersible and ROV work,
+  along with survey design and participation
+- In 2007, was one of the maintainers and operators of the Phantom ROV we have at PBS
+- In 2009, became program head of Pacific hake, took part in surveys and assessment processes
+- In 2012, became one of the four assessment authors to do the annual assessment
+- Began automating the document building process using the R package knitr and LaTeX
+- In 2021/2022, implemented scripts and Docker containers to move the assessment code to cloud computing
+
+---
+class: center, middle, inverse
+
+# Brief history of computation
+
+---
+class: left
+
+### Computation was theorized completely before the hardware
+
+- In 1936 Alan Turing derived a general example of the first CPU
+- A theoretical machine that solves a particular problem on an infinite memory tape
+  divided into cells with a head reader 
+- Turing demonstrated that a Universal machine could exist that simulated a set of those machines
+- This serial memory is in practice very limiting so we use Random Access Memory (RAM)
+
+- A programming language is **Turing complete** if it is capable of simulating any Turing machine
+- All current programming languages are Turing complete (if memory limitations are ignored)
+
+---
+class: left
+
+### First functioning languages
+
+- The first functioning languages were in the early 1950's
+- FORTRAN is so low-level it is still used in super-computing for speed reasons. It is the oldest language still in use
+- COBOL and BASIC were intended to be more programmer-friendly with English words as commands
+- LISt Processing language (LISP) was specified in 1958 and is still in use. If you use Emacs, you're using a LISP dialect (ELisp)
+- C was specified in 1972 
+- C++ arrived in 1980, and is essentially C with object-oriented structures
+- S Language for Statistical Computing was invented by Bell labs in 1976 and used FORTRAN
+  subroutines
+- R is an implementation of S and is written in C, Fortran, and R
+
+```{r history-pic, echo = FALSE, eval = TRUE, out.height = 250}
+knitr::include_graphics("img/history.jpg")
+```
+
+---
+class: center, middle, inverse
+
+# Compilation vs. Interpretation
+
+---
+class: left
+
+### Compilation (1)
+
+- Compilation is a process where the computer takes some code written in some language and generates machine
+  code (a binary representation) in an executable file that can be run on a CPU
+  
+- Languages such as C, C++ are compiled with these steps:
+  - Pre-processing: Pre-processing directives are used to modify the source or inject other code into
+    the source prior to compilation. Also know as Pre-processor directives which look like this in C-type
+    languages:
+  ```c
+    #include <iostream> 
+  ```
+  - Compiling: includes parsing the code and generating assembly language code which is targeted
+    at a specific CPU
+
+---
+class: left
+
+### Compilation (2)
+
+  - Assembler: The assembler converts the generated assembly code into pure binary code, which is also known as     object code. When you compile C or C++ and get *.o files*, that's what is inside
+  - Linking: Merges all object code from multiple modules into one. This includes any included libraries
+
+  - An executable file is generated and this has to be run explicitly from the operating system
+
+<br />
+
+<br />
+
+```{r asseembler-pic, echo = FALSE, eval = TRUE, out.width = 800}
+knitr::include_graphics("img/assembler.jpg")
+```
+    
+---
+class: left
+
+### Interpretation
+
+ - Interpretation is when code is executed without being previously compiled. It is run *on-the-fly*.
+ - Examples of interpreted languages are Javascript, Perl, Common Lisp, Java, and R
+ 
+ - For R, the interpreter does the following steps:
+ 
+   - Move to the next line/chunk of code and read it in:
+   ```r
+     x <- "Hello world"
+   ```
+   - Convert the line/chunk into a function call:
+   ```r
+   `<-`(x, "Hello world")
+   ```
+   - Execute the function, which for complex or slow-running code may call a compiled function
+     (compiled in C/C++)
+
+---
+class: left
+
+### Pros of Compilation over Interpretation (1)
+
+- Execution time of interpreted code is **MUCH** slower than for compiled code
+- Compilation allows full type checking ahead of time so you must define exactly what type a function's
+  arguments must be and what type is returned
+  - Interpretation allows a function argument to become any type which lends itself to fragile code
+  - Lack of type-checking allows users to write functions which return a value even if an argument
+    with the wrong type has been supplied to the function
+  - One example in base R is the **NROW** or **NCOL** functions. They return a value even if the
+    input is a vector or single value instead of a data frame:
+    
+  ```{r nrow-example, eval = TRUE, echo = TRUE}
+    df <- data.frame(a = 1:3, b = letters[1:3])
+    NROW(df)
+
+    vec <- letters[1:10]
+    NROW(vec)
+    
+    single <- "A"
+    NROW(single)
+  ```
+  - **NEVER** use these functions or be tempted to create such functions.
+
+---
+class: left
+
+### Pros of Interpretation over Compilation (2)
+
+- Interpreted code is usually platform-independent where compiled code needs to be compiled for a specific CPU.
+  Examples include Java's byte code and ELisp (Emacs Lisp) modules which are also a type of byte code
+
+- Easier debugging: Direct source code debugging
+
+---
+class: center, middle, inverse
+
+# Language-independent issues
+
+---
+class: left
+
+### Paths and project location in the filesystem
+
+- Your project/package should be completely system independent
+- If you have something like this (absolute path) anywhere in your code it will instantly stop anyone else from being able to use it
+   ```r
+     dat_file <- "C:/Users/grandin/data_extraction/2021/q1/data_q1.csv"
+   ```
+- In this case, put the csv file and other files needed for the project into a directory easily referred to relatively from
+  the project code directory, for example if you put *data_q1.csv* in a subdirectory called *data*:
+   ```r
+     dat_file <- "data/data_q1.csv"
+   ```
+- If using R, there's a package called **here** which detects the root directory for you, from
+  which all relative paths will be based. The example above would be:
+   ```r
+     dat_file <- here("data/data_q1.csv")
+   ```
+- To guarantee where the root directory is for the *here* package, place an empty *.here* file where you want that to be.
+  All relative paths will be from that place
+
+
+
+
+
+---
+class: left
+
+### For loops vs. lapply() and map()
+
+- For loops are not slower and you can use them if you prefer
+
+
 
 ---
 class: center, middle, inverse
