@@ -33,7 +33,7 @@ fig_align <- "center"
 knitr::opts_chunk$set(
   collapse = TRUE,
   warning = FALSE,
-  message = FALSE,
+  message = TRUE,
   comment = "#>",
   fig.asp = fig_asp,
   fig.width = fig_width,
@@ -149,30 +149,16 @@ class: center, middle, inverse
 ---
 class: left
 
-### Compilation (1)
+### Compilation
 
-- Compilation is a process where the computer takes some code written in some language and generates machine
-  code (a binary representation) in an executable file that can be run on a CPU
+- Compilation is a process where the computer takes some code written in a language and generates machine
+  code (a binary representation) in an executable file that can be run on a particular CPU
+
+- Pre-compiled libraries are linked into the executable by the linker (eg. DLLs)
   
-- Languages such as C, C++ are compiled with these steps:
-  - Pre-processing: Pre-processing directives are used to modify the source or inject other code into
-    the source prior to compilation. Also know as Pre-processor directives which look like this in C-type
-    languages:
-  ```c
-    #include <iostream> 
-  ```
-  - Compiling: includes parsing the code and generating assembly language code which is targeted
-    at a specific CPU
+- Languages such as C, C++, Fortran, COBOL, and Rust are compiled Ahead-of-time (AOT compiler)
 
----
-class: left
-
-### Compilation (2)
-
-  - Assembler: The assembler converts the generated assembly code into pure binary code, which is also known as     object code. When you compile C or C++ and get *.o files*, that's what is inside
-  - Linking: Merges all object code from multiple modules into one. This includes any included libraries
-
-  - An executable file is generated and this has to be run explicitly from the operating system
+- Some languages (eg. Julia, Factor) are compiled at run time by a Just-in-time (JIT) compiler
 
 <br />
 
@@ -187,16 +173,16 @@ class: left
 
 ### Interpretation
 
- - Interpretation is when code is executed without being previously compiled. It is run *on-the-fly*.
- - Examples of interpreted languages are Javascript, Perl, Common Lisp, Java, and R
+ - Interpretation is when code is executed without being previously compiled. It is run *on-the-fly*
+ - Examples of interpreted languages are Python, Javascript, Perl, Lisp, and R
  
  - For R, the interpreter does the following steps:
  
-   - Move to the next line/chunk of code and read it in:
+   - For each statement in your source code, for example:
    ```r
      x <- "Hello world"
    ```
-   - Convert the line/chunk into a function call:
+   - Convert the statement into a functional form, evaluate and return an object:
    ```r
    `<-`(x, "Hello world")
    ```
@@ -206,48 +192,30 @@ class: left
 ---
 class: left
 
-### Pros of Compilation over Interpretation (1)
+### Pros of Compilation over Interpretation
 
-- Execution time of interpreted code is **MUCH** slower than for compiled code
-- Compilation allows full type checking ahead of time so you must define exactly what type a function's
-  arguments must be and what type is returned
-  - Interpretation allows a function argument to become any type which lends itself to fragile code
-  - Lack of type-checking allows users to write functions which return a value even if an argument
-    with the wrong type has been supplied to the function
-  - One example in base R is the **NROW** or **NCOL** functions. They return a value even if the
-    input is a vector or single value instead of a data frame:
-    
-  ```{r nrow-example, eval = TRUE, echo = TRUE}
-    df <- data.frame(a = 1:3, b = letters[1:3])
-    NROW(df)
+- Execution time of interpreted code is a lot slower than for compiled code
 
-    vec <- letters[1:10]
-    NROW(vec)
-    
-    single <- "A"
-    NROW(single)
-  ```
-  - **NEVER** use these functions or be tempted to create such functions.
+- Compilation enforces strong typing which means you must define exactly what type a function's
+  arguments must be and what type is returned **More on this later - R is weakly typed!**
 
----
-class: left
 
-### Pros of Interpretation over Compilation (2)
+### Pros of Interpretation over Compilation
 
-- Interpreted code is usually platform-independent where compiled code needs to be compiled for a specific CPU.
-  Examples include Java's byte code and ELisp (Emacs Lisp) modules which are also a type of byte code
+- Interpreted code is usually platform-independent where compiled code needs to be compiled for a specific CPU
 
-- Easier debugging: Direct source code debugging
+- Easier debugging: Direct source code debugging, can run source directly while paused in debug session
+
 
 ---
 class: center, middle, inverse
 
-# Language-independent issues
+# Paths and syntax standards
 
 ---
 class: left
 
-### Paths and project location in the filesystem
+### Paths and filenames
 
 - Your project/package should be completely system independent
 - If you have something like this (absolute path) anywhere in your code it will instantly stop anyone else from being able to use it
@@ -264,180 +232,142 @@ class: left
    ```r
      dat_file <- here("data/data_q1.csv")
    ```
-- To guarantee where the root directory is for the *here* package, place an empty *.here* file where you want that to be.
-  All relative paths will be from that place
-
-
-
+- To guarantee where the root directory is for the *here* package, place an empty *.here* file where
+  you want that to be. All paths will be relative to that location
 
 
 ---
 class: left
 
-### For loops vs. lapply() and map()
+### Paths and filenames (2)
 
-- For loops are not slower and you can use them if you prefer
-
-
-
----
-class: center, middle, inverse
-
-# The Basics
-
----
-class: center
-
-### R is hard to learn
-
-.left[
-- Poor help pages. One example is the most basic function **print()**
-
-```{r print-help, echo = TRUE, eval = FALSE}
-?print
+```{r dir-structure-pic, echo = FALSE, eval = TRUE, out.width = 300}
+knitr::include_graphics("img/directory-structure-showing-here.jpg")
 ```
->print prints its argument and returns it invisibly (via invisible(x)). It is a generic function which means that new printing methods can be easily added for new classes.
-
-- **R** is mainly a functional language. Most languages are procedural, which are more intuitive
-  - In a procedural language, a vector or data frame would be passed to a function where calculations would be performed on it using nested loops
-  - In a functional language, functions can be *applied* to each element, row, or column of data
-  - If you are not *applying* functions like this, you are not harnessing R's functional power
-
-- **C++** is a procedural language with some functional abilities
-- **R** is a functional language with some procedural abilities
-]
+- If you want to see what the root directory is and why it was chosen, run the `here::dr_here()` function:
+```{r dr-here, echo = TRUE, eval = TRUE}
+here::dr_here()
+```
 
 ---
-class: center
+class: left
 
-### R is hard to learn (2)
-.left[
-Matrices and data.frames are not the same, they are stored internally in two completely different ways
-- data.frames are stored as a list of columns (which are vectors)
-- matrices are stored as a sequential 1-dimensional vector with dimension information so R knows how to break the vector up into 2-dimensions
-- because of this, matrices are much faster for math operations
-- data.frames use `names()` to get or set the column names
-- matrices use `colnames()` to get or set the column names
+### Paths and filenames (3)
+
+- In Windows, don't use double-backslashes for paths, this removes platform-independence and
+  R has evolved way past needing this. For example, you *can* define a path like this for Windows:
+```r
+path <- "github\\main\\project"
+```
+but *don't*!
+Always define it like this regardless of which OS you are on:
+```r
+path <- "github/main/project"
+```
+
+---
+class: left
+
+### Paths and filenames (4)
+
+- Use `file.path()` to bind paths and filenames instead of pasting slashes in. It's too hard to keep track of
+  whether or not slashes have been pasted in previously:
+```{r file-path-pasting, echo = TRUE, eval = TRUE}
+data_file <- file.path("github/main/project", "data_file.csv")
+print(data_file)
+```
+- `here::here()` does this automatically, so just use that: 
+```{r here-here-pasting, echo = TRUE, eval = TRUE}
+data_file <- here::here("github/main/project", "data_file.csv")
+print(data_file)
+```
+- If you want to be absolutely perfect you would do it this way:
+```{r here-here-perfect-pasting, echo = TRUE, eval = TRUE}
+data_file <- here::here("github", "main", "project", "data_file.csv")
+print(data_file)
+```
+
+---
+class: left
+
+### Syntax standards
+
+- This is covered very well in the [Advanced-R style guide](http://adv-r.had.co.nz/Style.html)
+
+The main points are:
+- Use all lowercase letters for variable names, with words being separated by underscores.
+  Do not use capital letters
+- Place spaces around all operators (**+**, **-**, **/** , *****, **=**, **,**, **%in%**).
+  This includes array indexing, e.g `dat[1, , 2]`
+- Opening brackets of all types should never go on their own lines
+- Indent two spaces inside functions, if conditionals, and for loops
+- Place a space before left parenthesis unless it is a function call
+- use **<-** for assignment, not **=**
+
+---
+class: left
+
+### File naming standards
+
+- File names should end in .R
+- File should be named with small letters only with words separated by dashes. eg.
+  `utilities.R`, `plot-biomass.R`, `table-decisions.R`, `load-model-files.R`
+- R source files should contain one function where possible and the filename
+  should be the same as the function name except with dashes as separators
+  instead of underscores.
   
-A matrix is a linear vector
-```{r matrix-impl,echo = TRUE, eval = TRUE}
-mat <- matrix(1:9, nrow = 3)
-print(mat)
+  eg. file `plot-biomass.R` contains one function called `plot_biomass()`
 
-lobstr::sxp(mat)
+- Exceptions to the one-file-rule are files like `utilities.R` which have small
+  utility functions that each fit on one screen
+
+```{r r-source-filenames-pic, echo = FALSE, eval = TRUE, out.width = 300}
+knitr::include_graphics("img/r-source-filenames.jpg")
 ```
-]
+---
+class: left
+
+### Variable naming standards
+
+- Standards apply to names for all functions, variables, and columns in data frames
+- Use **snake case** in R
+- Some different standards include:
+  - flatcase - `spatialarea` (Java package names)
+  - CapitalCamelCase - `SpatialArea` (C++ names, Java class names)
+  - lowerCamelCase - `spatialArea` (Java variable names)
+  - snake_case - `spatial_area` (Python variable names, R names)
+  - UPPER_SNAKE_CASE - `SPATIAL_AREA` (Constants in many languages)
+  - dotted.case - `spatial.area` (Some base R functions)
+- The worst thing to do is some combination of styles eg. `spatial_AREA.newvar` 
+
 
 ---
-class: center
+class: left
 
-### R is hard to learn (3)
-.left[
-A data.frame is a list of column data
-```{r dataframe-impl,echo = TRUE, eval = TRUE}
-df <- data.frame(x = c(1, 2, 3), y = c(4, 5, 6), z = c(7, 8, 9))
-print(df)
+### Base R has inconsistent naming
 
-lobstr::sxp(df)
+- Base R functions use different standards including dotted, snake case, camel case, upper camel case,
+  and flat case. These are sometimes even mixed up in a single function.
+
+- This is a major oversight and confusing for everyone
+
+- The **data.frame()** function has arguments with two different types of naming syntax and a
+  function call with a different syntax:
+```{r data-frame-ex, echo=TRUE, size="tiny"}
+data.frame
 ```
-Some functions designed to work with data.frames will fail with matrices, and vice-versa. Worse, some may succeed but give you the wrong output.
 
-]
-
----
-class: center
-
-### R is hard to learn (4)
-
-.left[
-- Inconsistent function names:
-  - `names()` vs `colnames()`
-  - `row.names()` vs `rownames()`
-  - `Sys.time()` vs `system.time()`
-  
-- Inconsistent variable naming syntax is used in the R source code:
-  - `SpatialArea` *CamelCase*
-  - `spatial_area` *underscore-seperated*
-  - `spatialArea` *backCase*
-  - `spatial.area` *dotted*
-  - `spatial_Area.new` *some combination of styles*
-]
-
----
-class: center
-
-### There are no operators
-
-.left[
-There are no operators in R, only functions. For example
-```{r operators, echo = TRUE, eval = TRUE}
-5 + 8 * 10
-```
-is actually called like this by R
-```{r non-operators, echo = TRUE, eval = TRUE}
-`+`(5, `*`(8, 10))
-```
-Here, `` `r '\x60+\x60()'` `` and `` `r '\x60*\x60()'` `` are functions taking two arguments each. All operators are actually functions like this.
-To prove these two lines of code are equivalent, look at the Abstract Syntax Trees (ASTs) that R creates when it parses an expression like this:
-]
-.left[
-.pull-left[
-```{r ast-operators, echo = TRUE, eval = TRUE}
-lobstr::ast({5 + 8 * 10})
-```
-]
-.pull-right[
-```{r ast-non-operators, echo = TRUE, eval = TRUE}
-lobstr::ast({`+`(5, `*`(8, 10))})
-```
-]
-]
-
----
-class: center
-
-### `if`, `else`, and all left braces (`[`, `(`, and `{`) are functions
-
-.left[
-Almost everything in R is a function. This can help you when trying to understand code
-
-```{r simple-if-statement, echo = TRUE, eval = TRUE}
-t_or_f <- sample(c(TRUE, FALSE), size = 1)
-if(t_or_f){
-  x <- -9
-  y <- -99
-  z <- -999
-}else{
-  x <- 10
-  y <- 100
-  z <- 1000
-}
-
-paste0("t_or_f = ", t_or_f, ", x = ", x, ", y = ", y, ", z = ", z)
-```
-Can be written like this:
-```{r exotic-if-statement, echo = TRUE, eval = TRUE}
-if(t_or_f) `{`(x <- -9, y <- -99, z <- -999) else(`{`(x <- 10, y <- 100, z <- 1000))
-
-paste0("t_or_f = ", t_or_f, ", x = ", x, ", y = ", y, ", z = ", z)
-```
-This is because `if`, `else`, and `{` are all functions so an `if..else` statement is implemented as this:
-`if()`  `` `r '\x60{\x60()'` `` `` `r 'else(\x60{\x60())'` `` and `` `r '\x60{\x60()'` `` has each line of code inside as an argument.
-]
 
 ---
 class: center
 
 ### Variable naming syntax
 
-.left[
-Even in the R base source code there are examples of bad naming. The **data.frame()** function
-has arguments with two different types of naming syntax and a function call with a different syntax:
-
-```{r data-frame-ex, echo=TRUE, size="tiny"}
-data.frame
-```
-]
+- Inconsistent function names:
+  - `names()` vs `colnames()`
+  - `row.names()` vs `rownames()`
+  - `Sys.time()` vs `system.time()`
+  
 
 
 ---
