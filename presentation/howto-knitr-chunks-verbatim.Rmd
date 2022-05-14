@@ -1,0 +1,23 @@
+This chunk is echoed in an actual code chunk block without the surrounding backticks
+and header
+
+```{r dotted-syntax, echo = TRUE, eval = FALSE}
+j <- c(1:10)
+par(mar = c(2, 2, 0, 0))
+plot(j, type = "l", lwd = 3, col = "blue")
+```
+
+This chunk is rendered verbatim in an rmarkdown document.
+Note the 4 backticks surrounding it and the little bit after the right
+curly brace in the first line
+ 
+````
+```{r dotted-syntax-2, echo = TRUE, eval = FALSE}`r ''`
+class(j) <- c(class(j), "revseries")
+plot.revseries <- function(d, ...){
+  plot.default(rev(d), ...)
+}
+par(mar = c(2, 2, 0, 0))
+plot(j, type = "l", lwd = 3, col = "blue")
+```
+````

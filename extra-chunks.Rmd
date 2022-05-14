@@ -120,3 +120,15 @@ This is because `if`, `else`, and `{` are all functions so an `if..else` stateme
 `if()`  `` `r '\x60{\x60()'` `` `` `r 'else(\x60{\x60())'` `` and `` `r '\x60{\x60()'` `` has each line of code inside as an argument.
 ]
 
+---
+class: left
+
+### Variable naming syntax
+
+- Inconsistent function names:
+  - `names()` vs `colnames()`
+  - `row.names()` vs `rownames()`
+  - `Sys.time()` vs `system.time()`
+  
+
+

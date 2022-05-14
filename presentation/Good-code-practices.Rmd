@@ -210,7 +210,7 @@ class: left
 ---
 class: center, middle, inverse
 
-# Paths and syntax standards
+# Paths and file organization
 
 ---
 class: left
@@ -290,31 +290,13 @@ print(data_file)
 ---
 class: left
 
-### Syntax standards
-
-- This is covered very well in the [Advanced-R style guide](http://adv-r.had.co.nz/Style.html)
-
-The main points are:
-- Use all lowercase letters for variable names, with words being separated by underscores.
-  Do not use capital letters
-- Place spaces around all operators (**+**, **-**, **/** , *****, **=**, **,**, **%in%**).
-  This includes array indexing, e.g `dat[1, , 2]`
-- Opening brackets of all types should never go on their own lines
-- Indent two spaces inside functions, if conditionals, and for loops
-- Place a space before left parenthesis unless it is a function call
-- use **<-** for assignment, not **=**
-
----
-class: left
-
 ### File naming standards
 
 - File names should end in .R
 - File should be named with small letters only with words separated by dashes. eg.
   `utilities.R`, `plot-biomass.R`, `table-decisions.R`, `load-model-files.R`
-- R source files should contain one function where possible and the filename
-  should be the same as the function name except with dashes as separators
-  instead of underscores.
+- R source files should contain one function and the filename should be the same
+  as the function name except with dashes as separators instead of underscores.
   
   eg. file `plot-biomass.R` contains one function called `plot_biomass()`
 
@@ -353,55 +335,51 @@ class: left
 
 - The **data.frame()** function has arguments with two different types of naming syntax and a
   function call with a different syntax:
+--
 ```{r data-frame-ex, echo=TRUE, size="tiny"}
 data.frame
 ```
 
-
 ---
-class: center
+class: left
 
-### Variable naming syntax
+### Don't use dotted names
 
-- Inconsistent function names:
-  - `names()` vs `colnames()`
-  - `row.names()` vs `rownames()`
-  - `Sys.time()` vs `system.time()`
-  
-
-
----
-class: center
-
-### Variable naming syntax (2)
-
-.left[
-Never use dotted variable naming syntax. Dotted syntax is reserved for custom class functions based on other generic functions.
-]
-.pull-left[.left[
+- Dotted syntax in R is used to denote a custom function for a class
+- If you come from other languages, the dot typically means that what is to the left is a class and
+  what is to the right is a method of that class (C++, Java) so this is very confusing for those people.
+  eg. in C++: `string.size()`, in Java: `Socket.connect()`
+- Solution: Never create dotted variable names or function names
+--
+.pull-left[
 ```{r dotted-syntax, echo = TRUE, eval = FALSE}
-j <- c(1:10)
+x <- 1:10
 par(mar = c(2, 2, 0, 0))
-plot(j, type = "l", lwd = 3, col = "blue")
+plot(x, type = "l", lwd = 3, col = "blue")
 ```
-]]
+]
 .pull-right[
-```{r plot-dotted-syntax, ref.label="dotted-syntax", echo = FALSE}
+```{r plot-dotted-syntax, ref.label="dotted-syntax", echo = FALSE, out.height = 125}
 ```
 ]
 --
-.pull-left[.left[
+.pull-left[
 ```{r dotted-syntax-2, echo = TRUE, eval = FALSE}
-class(j) <- "reverse_series"
-plot.reverse_series <- function(d, ...){
+class(x) <- c(class(x), "revseries")
+plot.revseries <- function(d, ...){
   plot.default(rev(d), ...)
 }
 par(mar = c(2, 2, 0, 0))
-plot(j, type = "l", lwd = 3, col = "blue")
+plot(x, type = "l", lwd = 3, col = "blue")
 ```
-]]
+]
 .pull-right[
-```{r plot-dotted-syntax-2, ref.label="dotted-syntax-2", echo = FALSE}
+```{r plot-dotted-syntax-2, ref.label="dotted-syntax-2", echo = FALSE, out.height = 125}
+```
+]
+.pull-left[
+```{r class-check-series, echo = TRUE, eval = TRUE}
+class(x)
 ```
 ]
 
@@ -414,34 +392,40 @@ class: center, middle, inverse
 > `r tufte::quote_footer('- Hadley Wickham')`
 
 ---
-class: center
+class: left
 
-### Style suggestions
+### Syntax style standards
 
-.left[
 We may have to live with the non-adherence of variable naming present in R's base code and that of some package developers, but we can and should follow best practices for variable naming syntax.
 
-I follow *Hadley Wickam's Style Guide*:
-
-**http://adv-r.had.co.nz/Style.html**
+For R, this is covered very well in the [Advanced-R style guide](http://adv-r.had.co.nz/Style.html)
 
 The main points are:
-- Use all lowercase letters for variable names, with words being separated by underscores. Do not use capital letters
-- Place spaces around all operators (**+**, **-**, **/** , *****, **=**, **,**, **%in%**). This includes array indexing, e.g `dat[1, , 2]`
-- Opening curly brace should never go on its own line
+- Use all lowercase letters for variable names, with words being separated by underscores.
+  Do not use capital letters
+- Place spaces around all operators (**+**, **-**, **/** , *****, **=**, **,**, **%in%**).
+  This includes array indexing, e.g `dat[1, , 2]`
+- Opening brackets of all types should never go on their own lines
 - Indent two spaces inside functions, if conditionals, and for loops
 - Place a space before left parenthesis unless it is a function call
 - use **<-** for assignment, not **=**
-]
 
 ---
-class: center
+class: left
 
-### Style suggestions (2)
+### Syntax style standards (2)
 
-.left[
 Example of good code style:
-```{r good-code-style, echo = TRUE, eval = FALSE}
+
+```{r good-code-style, echo = TRUE, eval = TRUE}
+latex_math_bold <- function(txt){
+  paste0("$\\mathbf{", txt, "}$")
+}
+
+latex_bold <- function(txt){
+  paste0("\\textbf{", txt, "}")
+}
+
 latex_mlc <- function(latex_vec,
                       make_bold = TRUE,
                       math_bold = FALSE){
@@ -452,14 +436,24 @@ latex_mlc <- function(latex_vec,
       latex_vec <- purrr::map_chr(latex_vec, latex_bold)
     }
   }
-  latex_str <- paste(latex_vec, collapse = latex_nline)
+  latex_str <- paste(latex_vec, collapse = " \\\\ ")
   paste0("\\mlc{", latex_str, "}")
 }
+
+
+latex_mlc(c("Coastwide", "Catch", "(tonnes)"))
 ```
+
+- See **`gfutilities::summarize_quants()`** for a longer example with Roxygen documentation
+
+---
+class: left
+
+### Syntax style standards (3)
+
 Note that
 - **if()** and **for()** are functions so there should be no space before the left parenthesis
 - the argument list has each argument on it's own line. This is easier to read and allows easy commenting-out of individual arguments
-]
 
 ---
 class: center
@@ -622,58 +616,6 @@ Now, send a variable valued `NULL`:
 test_func(d = NULL,
           a = 1:10,
           b = tibble::tibble(j = c(1, 2, 3), k = c(4, 5, 6)))
-```
-]
-
----
-class: center, middle, inverse
-
-# Setting up your project
-
----
-class: center
-
-### Paths and portability
-
-.left[
-**Never** have lines like this in your project, it will break on any other machine and cause a high degree of frustration for those folks trying to use it.
-```{r bad-path, echo = TRUE, eval = FALSE}
-my_path <- "C:\\Users\\grandinc\\Data\\Projects\\2021"
-```
-One correct way to set up paths for your project is to use the `here` package. The `here::here()` function performs a search for the following to find the root directory of your project:
-
-- contains a file .here
-- contains a file matching [.]Rproj$ with contents matching ^Version: in the first line
-- contains a file DESCRIPTION with contents matching ^Package:
-- contains a directory .git
-
-The function `here::dr_here()` tells you why your project root directory was chosen.
-]
-
----
-class: center
-
-### Paths and portability (2)
-
-.left[
-Suppose you want to load a csv file from the **data** directory which is a subdirectory of the directory containing the **.here** file (i.e. the root directory):
-```{r load-csv, echo = TRUE, eval = FALSE}
-dat <- readr::read_csv(file = here::here("data", "datafile.csv"))
-```
-
-If you use `here::here()` everywhere in your project you can be assured it will run on everyone else's machine, regardless of which directory they place the project in.
-
-You can also use `file.path()` with a pre-stored data directory variable:
-```{r load-csv2, echo = TRUE, eval = FALSE}
-data_dir <- here::here("data")
-# Later on in the code ...
-dat <- readr::read_csv(file = file.path(data_dir, "datafile.csv"))
-```
-
-These functions are portable across platforms, so that you don't have to paste together paths using the path separator like this:
-```{r bad-path-method, echo = TRUE, eval = FALSE}
-# BAD!
-dat <- readr::read_csv(file = paste0(root_dir, "/data/datafile.csv"))
 ```
 ]
 
