@@ -6,7 +6,7 @@ institute: "DFO"
 date: "Slides compiled on `r Sys.Date()`"
 output:
   xaringan::moon_reader:
-    css: ["default", "xaringan-themer.css", "inline-code.css"]
+    css: ["xaringan-themer.css", "inline-code.css"]
     lib_dir: libs
     nature:
       highlightStyle: github
@@ -341,30 +341,31 @@ data.frame
 ```
 
 ---
-class: left
+class: center
 
 ### Don't use dotted names
 
-- Dotted syntax in R is used to denote a custom function for a class
+.left[
 - If you come from other languages, the dot typically means that what is to the left is a class and
   what is to the right is a method of that class (C++, Java) so this is very confusing for those people.
   eg. in C++: `string.size()`, in Java: `Socket.connect()`
-- Solution: Never create dotted variable names or function names
+- **Dotted syntax in R is used to denote a custom function for a class**
+]
 --
-.pull-left[
-```{r dotted-syntax, echo = TRUE, eval = FALSE}
+.pull-left[.left[
+```{r dotted-syntax, echo = TRUE, fig.show = "hide"}
 x <- 1:10
 par(mar = c(2, 2, 0, 0))
 plot(x, type = "l", lwd = 3, col = "blue")
 ```
-]
-.pull-right[
-```{r plot-dotted-syntax, ref.label="dotted-syntax", echo = FALSE, out.height = 125}
+]]
+.pull-right[.left[
+```{r plot-dotted-syntax, ref.label="dotted-syntax", out.height = 125}
 ```
-]
+]]
 --
-.pull-left[
-```{r dotted-syntax-2, echo = TRUE, eval = FALSE}
+.pull-left[.left[
+```{r dotted-syntax-2, echo = TRUE, fig.show = "hide"}
 class(x) <- c(class(x), "revseries")
 plot.revseries <- function(d, ...){
   plot.default(rev(d), ...)
@@ -372,16 +373,51 @@ plot.revseries <- function(d, ...){
 par(mar = c(2, 2, 0, 0))
 plot(x, type = "l", lwd = 3, col = "blue")
 ```
-]
-.pull-right[
-```{r plot-dotted-syntax-2, ref.label="dotted-syntax-2", echo = FALSE, out.height = 125}
+]]
+.pull-right[.left[
+```{r plot-dotted-syntax-2, ref.label="dotted-syntax-2", out.height = 125}
 ```
-]
-.pull-left[
-```{r class-check-series, echo = TRUE, eval = TRUE}
+]]
+.pull-left[.left[
+```{r class-check-series, echo = TRUE}
 class(x)
 ```
-]
+]]
+
+---
+class: left
+
+### Debug session - Appending values to a vector of factors
+
+When you run the following code:
+
+```{r factor-example, echo = TRUE, eval = TRUE}
+j <- factor(1:10)
+print(j)
+print(class(j))
+
+
+k <- c(j, 11)
+print(k)
+print(class(k))
+```
+the result is a numeric vector. But what if you wanted a factor vector
+returned instead?
+
+How can you change the definition of `c()` without messing up all the
+calls to `c()` for other types?
+--
+```{r c-factor-default, echo = TRUE, eval = FALSE}
+c.factor <- function (..., recursive = TRUE){
+  x <- lapply(list(...), function(.x) as.factor(.x))
+  y <- unlist(x, recursive = recursive)
+  if(inherits(y, "factor") &&
+       all(vapply(x, inherits, NA, "ordered")) &&
+      (length(unique(lapply(x, levels))) == 1L))
+    class(y) <- c("ordered", "factor")
+  y
+}
+```
 
 ---
 class: center, middle, inverse
