@@ -6,13 +6,13 @@ institute: "DFO"
 date: "Slides compiled on `r Sys.Date()`"
 output:
   xaringan::moon_reader:
-    css: ["xaringan-themer.css", "inline-code.css"]
+    css: ["xaringan-themer.css", "inline-code.css", "code-custom.css"]
     lib_dir: libs
     nature:
       highlightStyle: github
       highlightLines: true
       countIncrementalSlides: false
-      #ratio: 16:9
+      ratio: 16:9
 header-includes:
   - \usepackage{animate}
 ---
@@ -66,203 +66,127 @@ style_mono_accent(
 ```
 
 ---
-class: left
-
-### Outline
-
-- My background
-- Brief history of computation
-- Compilation vs. Interpretation
-- Indentation and syntax standards
-- Documentation
-- Directories and project control
-- Speed and algorithms
-
----
-class: left
-
-### My background
-
-<div class = "portrait"; style="float:right;position: relative; top: -80px;">
-```{r chris-pic, eval = TRUE}
-knitr::include_graphics("img/chris-aquarius.jpg")
-```
-</div>
-
-- Grew up in Nanaimo, B.C. and still there
-- Started as a co-op student in 1999, and started full-time after finishing BSc.
-- BSc. in Computer Science in 2000 UVIC
-- MSc. in Earth & Ocean Science in 2006 (Ocean acoustics) UVIC
-- Have been in the Groundfish section at the Pacific Biological Station ever since
-- Started with database coding (Visual Basic for Applications & SQL)
-- In 2003, started work with the Inshore Rockfish program and did submersible and ROV work,
-  along with survey design and participation
-- In 2007, was one of the maintainers and operators of the Phantom ROV we have at PBS
-- In 2009, became program head of Pacific hake, took part in surveys and assessment processes
-- In 2012, became one of the four assessment authors to do the annual assessment
-- Began automating the document building process using the R package knitr and LaTeX
-- In 2021/2022, implemented scripts and Docker containers to move the assessment code to cloud computing
-
----
-class: center, middle, inverse
-
-# Brief history of computation
-
----
-class: left
-
-### Computation was theorized completely before the hardware
-
-- In 1936 Alan Turing derived a general example of the first CPU
-- A theoretical machine that solves a particular problem on an infinite memory tape
-  divided into cells with a head reader 
-- Turing demonstrated that a Universal machine could exist that simulated a set of those machines
-- This serial memory is in practice very limiting so we use Random Access Memory (RAM)
-
-- A programming language is **Turing complete** if it is capable of simulating any Turing machine
-- All current programming languages are Turing complete (if memory limitations are ignored)
-
----
-class: left
-
-### First functioning languages
-
-- The first functioning languages were in the early 1950's
-- FORTRAN is so low-level it is still used in super-computing for speed reasons. It is the oldest language still in use
-- COBOL and BASIC were intended to be more programmer-friendly with English words as commands
-- LISt Processing language (LISP) was specified in 1958 and is still in use. If you use Emacs, you're using a LISP dialect (ELisp)
-- C was specified in 1972 
-- C++ arrived in 1980, and is essentially C with object-oriented structures
-- S Language for Statistical Computing was invented by Bell labs in 1976 and used FORTRAN
-  subroutines
-- R is an implementation of S and is written in C, Fortran, and R
-
-```{r history-pic, echo = FALSE, eval = TRUE, out.height = 250}
-knitr::include_graphics("img/history.jpg")
-```
-
----
-class: center, middle, inverse
+class: center, middle, inverse, bg_matrix
 
 # Compilation vs. Interpretation
 
 ---
 class: left
 
-### Compilation
+### Compilation vs Interpretation
 
-- Compilation is a process where the computer takes some code written in a language and generates machine
-  code (a binary representation) in an executable file that can be run on a particular CPU
+#### Compilation
 
-- Pre-compiled libraries are linked into the executable by the linker (eg. DLLs)
-  
-- Languages such as C, C++, Fortran, COBOL, and Rust are compiled Ahead-of-time (AOT compiler)
+- A compiler takes some code written in a language and generates an executable file that can be run on a particular CPU
 
-- Some languages (eg. Julia, Factor) are compiled at run time by a Just-in-time (JIT) compiler
+- Compilation enforces strong typing which means you must define exactly what type a function's arguments must be and what type is returned
 
-<br />
+- Examples of compiled languages are C++ and Fortran
 
-<br />
+#### Interpretation
 
-```{r asseembler-pic, echo = FALSE, eval = TRUE, out.width = 800}
-knitr::include_graphics("img/assembler.jpg")
-```
-    
----
-class: left
+- An interpreter "*compiles*" code line-by-line at run time
 
-### Interpretation
+- Interpreted code is usually platform-independent / compiled code needs to be compiled for a specific CPU
 
- - Interpretation is when code is executed without being previously compiled. It is run *on-the-fly*
- - Examples of interpreted languages are Python, Javascript, Perl, Lisp, and R
- 
- - For R, the interpreter does the following steps:
- 
-   - For each statement in your source code, for example:
-   ```r
-     x <- "Hello world"
-   ```
-   - Convert the statement into a functional form, evaluate and return an object:
-   ```r
-   `<-`(x, "Hello world")
-   ```
-   - Execute the function, which for complex or slow-running code may call a compiled function
-     (compiled in C/C++)
+- Examples of interpreted languages are Python, Perl, Lisp, and R
 
 ---
-class: left
-
-### Pros of Compilation over Interpretation
-
-- Execution time of interpreted code is a lot slower than for compiled code
-
-- Compilation enforces strong typing which means you must define exactly what type a function's
-  arguments must be and what type is returned **More on this later - R is weakly typed!**
-
-
-### Pros of Interpretation over Compilation
-
-- Interpreted code is usually platform-independent where compiled code needs to be compiled for a specific CPU
-
-- Easier debugging: Direct source code debugging, can run source directly while paused in debug session
-
-
----
-class: center, middle, inverse
+class: center, middle, inverse, bg_fire
 
 # Paths and file organization
 
----
-class: left
-
-### Paths and filenames
-
-- Your project/package should be completely system independent
-- If you have something like this (absolute path) anywhere in your code it will instantly stop anyone else from being able to use it
-   ```r
-     dat_file <- "C:/Users/grandin/data_extraction/2021/q1/data_q1.csv"
-   ```
-- In this case, put the csv file and other files needed for the project into a directory easily referred to relatively from
-  the project code directory, for example if you put *data_q1.csv* in a subdirectory called *data*:
-   ```r
-     dat_file <- "data/data_q1.csv"
-   ```
-- If using R, there's a package called **here** which detects the root directory for you, from
-  which all relative paths will be based. The example above would be:
-   ```r
-     dat_file <- here("data/data_q1.csv")
-   ```
-- To guarantee where the root directory is for the *here* package, place an empty *.here* file where
-  you want that to be. All paths will be relative to that location
-
+> "If the first line of your R script is"
+>
+> `setwd("C:\Users\me\path\only\I\have")`
+>
+> "I will come into your office and SET YOUR COMPUTER ON FIRE"
+> 
+> "If the first line of your R script is"
+>
+> `rm(list = ls())`
+> 
+> "I will come into your office and SET YOUR COMPUTER ON FIRE"
+>
+> `r tufte::quote_footer('- Jenny Bryan')`
 
 ---
 class: left
 
-### Paths and filenames (2)
+### Directory structure - using `here::here()`
+
+- To avoid this: `r emo::ji("fire")` `setwd("C:\Users\me\path\only\I\have")` `r emo::ji("fire")`
+
+- Make everything in your project relative to a root project directory
+
+- Use `here::here()`
+
+- Example:
+    - If you have data in file called `mydata.csv` somewhere on your computer, create a `data` directory as a subdirectory of your project directory and place `mydata.csv` in there
+    
+    - *Anywhere* in your project code, reference that `data` directory like this: `here::here("data")`
+
+--
+
+```{r, mydata, results = 'asis', echo = TRUE}
+message(getwd())
+data_fn <- here::here("data", "mydata.csv")
+message(data_fn)
+d <- read.csv(data_fn)
+knitr::kable(d)
+```
+
+---
+class: left
+
+### Directory structure - how `here::here()` works
 
 ```{r dir-structure-pic, echo = FALSE, eval = TRUE, out.width = 300}
 knitr::include_graphics("img/directory-structure-showing-here.jpg")
 ```
-- If you want to see what the root directory is and why it was chosen, run the `here::dr_here()` function:
-```{r dr-here, echo = TRUE, eval = TRUE}
+- If you want to see what the project's root directory is and why it was chosen, run the `here::dr_here()` function:
+```{r dr-here, echo = TRUE}
 here::dr_here()
 ```
 
 ---
+class: left, bg_bomb
+
+### Changing directories in code
+
+- Your code should *NEVER* contain the `setwd()` command
+
+```{r, never-setwd, echo = TRUE, error = TRUE}
+message(getwd())
+setwd("d:/github/main/good-code-practices")
+d <- read.csv(file.path("data", "mydata.csv"))
+message(getwd())
+```
+
+- It almost certain nobody else will be able to get the code to work
+
+- It probably won't work on your next machine either
+
+
+---
 class: left
 
-### Paths and filenames (3)
+### Creating paths to directories and files
 
 - In Windows, don't use double-backslashes for paths, this removes platform-independence and
   R has evolved way past needing this. For example, you *can* define a path like this for Windows:
 ```r
 path <- "github\\main\\project"
 ```
-but *don't*!
-Always define it like this regardless of which OS you are on:
+
+- Instead, define it with forward slashes regardless of which OS you are on:
 ```r
 path <- "github/main/project"
+```
+
+- Or better yet, for complete platform-independance use `file.path()`:
+```r
+path <- file.path("github", "main", "project") 
 ```
 
 ---
@@ -435,16 +359,55 @@ class: left
 We may have to live with the non-adherence of variable naming present in R's base code and that of some package developers, but we can and should follow best practices for variable naming syntax.
 
 For R, this is covered very well in the [Advanced-R style guide](http://adv-r.had.co.nz/Style.html)
+and the [Tidyverse style guide](https://style.tidyverse.org/).
 
 The main points are:
 - Use all lowercase letters for variable names, with words being separated by underscores.
   Do not use capital letters
-- Place spaces around all operators (**+**, **-**, **/** , *****, **=**, **,**, **%in%**).
-  This includes array indexing, e.g `dat[1, , 2]`
+- Place spaces around all infix operators (**+**, **-**, **/** , *****, **=**, **,**, **%in%**).
+  This includes before indices in array indexing, e.g `dat[1, , 2]`, `arr_x[1, 1, ]`
 - Opening brackets of all types should never go on their own lines
 - Indent two spaces inside functions, if conditionals, and for loops
-- Place a space before left parenthesis unless it is a function call
 - use **<-** for assignment, not **=**
+- Place a space before left parenthesis unless it is a function call. I disagree
+  with placing spaces after `if`, `for`, and `while` statements
+
+---
+class: left
+
+### Syntax style standards
+
+- Here's what the style guide suggests:
+```{r if-for-while-spacing, echo = TRUE, eval = FALSE}
+if (x >= 0.5) {
+ done <- FALSE
+ while (!done) {
+   for (i in 1:10) {
+     print(letters[sample(1:26, i)])
+   }
+   done <- TRUE
+ }
+} else {
+ print("Lower 50th")
+}
+```
+- Here's how I would write it:
+```{r if-for-while-nospacing, echo = TRUE, eval = TRUE}
+x <- 0.9
+if(x >= 0.5){
+  done <- FALSE
+  while(!done){
+    for(i in 0:4){
+      print(letters[c(1, 5, 9, 15, 21) + i])
+    }
+    done <- TRUE
+  }
+}else{
+  print("Lower 50th")
+}
+```
+- These are just functions with syntactic sugar 
+
 
 ---
 class: left
@@ -565,9 +528,10 @@ class: center
 ### Variable typing (2)
 
 .left[
-In R, variables are **weakly typed**. In addition, R is **interpreted**, not **compiled** so you will not know there is a problem until your code runs to that point. This could take a long time, and then require fixing and re-running again to that point to ensure it is working.
+In R, variables are **weakly typed**. In addition, R is **interpreted**, not **compiled** so you will not know there is a problem until your code runs to that point
 
 ```{r example-string-typing-r, echo = TRUE, eval = TRUE}
+#' Multiply two numbers
 mult <- function(a, b){
   r <- a * b
   r
@@ -578,6 +542,14 @@ In this code, variables are not typed and they could be anything. If we try to r
 ```{r mult-data-frame, echo = TRUE, eval = TRUE}
 d <- data.frame(j = c(1, 2, 3), k = c(4, 5, 6))
 mult(5, d)
+```
+]
+
+.left[
+Or worse:
+```{r mult-data-frame-with-chars, echo = TRUE, eval = TRUE, error = TRUE}
+d1 <- data.frame(j = c(1, 2, 3), k = c(4, 5, "a"))
+mult(5, d1)
 ```
 ]
 
@@ -593,7 +565,7 @@ k <- data.frame(j = c(1, 2, 3), k = c(4, 5, 6), i = c(10, 11, 12))
 mult(d, k)
 ```
 
-This is obvious here, but when errors like this happen inside a function in someone else's package can be very frustrating. It can mean that you have to download the package source and debug the package.
+This is obvious here, but when errors like this happen deep inside a function in someone else's package can be very frustrating. It can mean that you have to download the package source and debug the package.
 
 These errors can be caught at the beginning of the function by checking all the variables for correct type and dimension. This is called **Argument verification**
 ]
@@ -601,77 +573,35 @@ These errors can be caught at the beginning of the function by checking all the 
 ---
 class: center
 
-### Argument verification
-
-.left[
-To emulate strongly typed languages, we can check all the arguments in a function. This involves comparing the class, length, and/or dimension of arguments with some known value. The following code will produce no errors.
-
-```{r argument-checking, echo = TRUE, eval = TRUE}
-library(checkargs)
-test_func <- function(d = NULL, a = NULL, b = NULL){
-  # Check that d is a data frame with 3 rows and two columns
-  check_arg(d, chk_class = "data.frame", chk_dim = c(3, 2))
-
-  # Check that a is a vector of numbers of length 10
-  check_arg(a, chk_class = c("integer", "numeric"), chk_len = 10)
-
-  # Check that b is a tibble with 3 rows and two columns
-  check_arg(b, chk_class = "tbl_df", chk_dim = c(3, 2))
-  
-  # Actual function code would go here
-  invisible()
-}
-
-test_func(d = data.frame(j = c(1, 2, 3), k = c( 4, 5, 6)),
-          a = 1:10,
-          b = tibble::tibble(j = c(1, 2, 3), k = c(4, 5, 6)))
-
-```
-]
-
----
-class: center
-
-### Argument verification (2)
-
-.left[
-Now, calling the function with the wrong length numerical vector we get an error explaining the issue:
-```{r argument-checking-error1, echo = TRUE, eval = TRUE, error = TRUE}
-test_func(d = data.frame(j = c(1, 2, 3), k = c(4, 5, 6)),
-          a = 1:11,
-          b = tibble::tibble(j = c(1, 2, 3), k = c(4, 5, 6)))
-```
-This time, the data frame is the wrong dimension:
-```{r argument-checking-error2, echo = TRUE, eval = TRUE, error = TRUE}
-test_func(d = data.frame(j = c(1, 2), k = c(4, 5)),
-          a = 1:10,
-          b = tibble::tibble(j = c(1, 2, 3), k = c(4, 5, 6)))
-```
-Now, send a variable valued `NULL`:
-```{r argument-checking-error3, echo = TRUE, eval = TRUE, error = TRUE}
-test_func(d = NULL,
-          a = 1:10,
-          b = tibble::tibble(j = c(1, 2, 3), k = c(4, 5, 6)))
-```
-]
-
 ---
 class: center, middle, inverse
 
 # Promises and the ellipsis argument (...)
 
-
 ---
-class: center
+class: left
 
 ### Global variables are bad
-.left[
-  Global variables are not a good idea in any language 
-  - Any function can read or write to them which means the global state of the program can change in many ways at any time
-  - As the project complexity increases, keeping track of these changes becomes extremely
-  - Eventually, debugging becomes impossible
-]
 
+- Global variables are not a good idea in any language 
+  - Any function can read or write to them which means the global state of the
+    program can change in many ways at any time
+  - As the project complexity increases, keeping track of these changes becomes
+    extremely difficult and frustrating
+  - Eventually, debugging becomes impossible
+
+- Pass all variables as arguments to functions instead
+  - This can be tedious if you are passing variables through multiple functions
+    in a chain fashion. eg:
+    ```{r chain-passing, echo = TRUE}
+      yy <- function(a, b, d){
+        paste("yy() has arguments:", a, b, d)
+      }
+      j <- 1; k <- 2; a <- 3; b <- 4; d <- 5
+      xx <- function(j, k, a, b, d){
+        paste("xx() has arguments:", j, "and", k, "and", yy(a, b, d))
+      }
+    ```
 ---
 class: center
 
@@ -866,7 +796,18 @@ system.time(h(loop_len))
 Looking at the **user** time, the squared operation is faster than multiplying the number with itself. It is a special case of power which has been optimized in R. For higher degrees of power, it is much faster to use multiplication (7.8x faster) and the squared operation with multiplication (9.6x faster) rather than calculate using the power function (^) itself.
 ]
 
+---
+class: left
 
+# References for images
+
+- [Obi Wan](https://starecat.com/when-you-read-some-incredibly-bad-code-thinking-what-a-moron-wrote-this-but-halfway-through-it-starts-to-become-familiar-obi-wan-kenobi-well-of-course-i-know-him-hes-me)
+
+- [Animated fire](http://clipart-library.com/clipart/n932465.htm)
+
+- [The Matrix](https://en.wikipedia.org/wiki/File:Computer-screen-code-glitch-animation-gif-background-free.gif)
+
+- [Rotating head](https://giphy.com/gifs/hacker-hack-hacking-4OAxDXv4RdUeg38JYi)
 
 ---
 class: center

@@ -1,0 +1,35 @@
+---
+title: "Embed A Live Video of Yourself Through Your Camera in xaringan Slides"
+subtitle: "HTML5 Rocks!"
+author: "[Yihui Xie](https://yihui.org)"
+date: "2017/12/07"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    includes:
+      after_body: webcam.html
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+```
+
+background-image: url(https://upload.wikimedia.org/wikipedia/commons/b/be/Sharingan_triple.svg)
+
+???
+
+Image credit: [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Sharingan_triple.svg)
+
+---
+class: center, middle
+
+# All the magic comes from
+
+### `navigator.MediaDevices.getUserMedia()`
+
+---
+class: inverse, center, middle
+
+# For more information, see the blog post
+
+### https://yihui.org/en/2017/12/html5-camera/

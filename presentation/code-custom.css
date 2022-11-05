@@ -1,0 +1,199 @@
+.left-fig {
+  width: 48%;
+  float: left;
+  padding-right: 1%;
+}
+.right-fig {
+  width: 48%;
+  float: right;
+  padding-left: 1%;
+}
+
+.link-style1 a {
+  color: blue;
+  text-decoration: underline;
+}
+
+.link-style2 a {
+ color: blue;
+}
+
+img.twentypercsize {
+  max-width:20%;
+  max-height:20%;
+}
+
+img.thirtypercsize {
+  max-width:30%;
+  max-height:30%;
+}
+
+img.fortypercsize {
+  max-width:40%;
+  max-height:40%;
+}
+
+img.fiftypercsize {
+  max-width:50%;
+  max-height:50%;
+}
+
+img.sixtypercsize {
+  max-width:60%;
+  max-height:60%;
+}
+
+.bg_arf {
+  position: relative;
+  z-index: 1;
+}
+
+.bg_arf::before {
+      content: "";
+      background-image: url(figures/arrowtooth_flounder.jpg);
+      background-size: cover;
+      background-repeat: no-repeat;
+      position: absolute;
+      top: 0px;
+      right: 0px;
+      bottom: 0px;
+      left: 0px;
+      opacity: 0.3;
+      z-index: -1;
+}
+
+.bg_bomb {
+  position: relative;
+  z-index: 1;
+}
+
+.bg_bomb::before {
+      content: "";
+      background-image: url(img/bomb-drop.gif);
+      background-repeat: no-repeat;
+      background-position: bottom;
+      position: absolute;
+      top: 0px;
+      right: 0px;
+      bottom: 0px;
+      left: 0px;
+      opacity: 0.5;
+      z-index: -1;
+/*      -webkit-filter: blur(12px);
+      filter: blur(12px);
+*/
+}
+
+.bg_fire {
+  position: relative;
+  z-index: 1;
+}
+
+.bg_fire::before {
+      content: "";
+      background-image: url(img/fire.gif);
+      background-size: cover;
+      background-repeat: no-repeat;
+      position: absolute;
+      top: 0px;
+      right: 0px;
+      bottom: 0px;
+      left: 0px;
+      opacity: 0.5;
+      z-index: -1;
+}
+
+.bg_matrix {
+  position: relative;
+  z-index: 1;
+}
+
+.bg_matrix::before {
+      content: "";
+      background-image: url(img/matrix.gif);
+      background-size: cover;
+      background-repeat: no-repeat;
+      position: absolute;
+      top: 0px;
+      right: 0px;
+      bottom: 0px;
+      left: 0px;
+      opacity: 0.5;
+      transform:scaleX(-1);
+      z-index: -1;
+}
+
+.bg_head {
+  position: relative;
+  z-index: 1;
+}
+
+.bg_head::before {
+      content: "";
+      background-image: url(img/rotating-head.gif);
+      background-size: cover;
+      background-repeat: no-repeat;
+      position: absolute;
+      top: 0px;
+      right: 0px;
+      bottom: 0px;
+      left: 0px;
+      opacity: 0.5;
+      transform:scaleX(-1);
+      z-index: -1;
+}
+
+.bg_arf_many {
+  position: relative;
+  z-index: 1;
+}
+
+.bg_arf_many::before {
+      content: "";
+      background-image: url(figures/arrowtooth_flounder_many.jpg);
+      background-size: cover;
+      background-repeat: no-repeat;
+      position: absolute;
+      top: 0px;
+      right: 0px;
+      bottom: 0px;
+      left: 0px;
+      opacity: 0.2;
+      z-index: -1;
+}
+
+.bg_surveys {
+  position: relative;
+  z-index: 1;
+}
+
+.bg_surveys::before {
+      content: "";
+      background-image: url(figures/survey_world_map.png);
+      background-size: cover;
+      background-repeat: no-repeat;
+      position: absolute;
+      top: 0px;
+      right: 0px;
+      bottom: 0px;
+      left: 0px;
+      opacity: 0.1;
+      z-index: -1;
+}
+
+.footer {
+    position: absolute;
+    bottom: 10px;
+    right: 65px;
+    height: 25px;
+    width: 20%;
+}
+.footer > a {
+    font-size: 14pt;
+    color: blue;
+    position: absolute;
+    right: 15px;
+    bottom: 1px;
+    text-decoration: underline;
+}
+
