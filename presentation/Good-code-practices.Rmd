@@ -215,8 +215,8 @@ d <- read.csv(file.path("data", "mydata.csv"))
 message(getwd())
 ```
 
-- It's a good bet that nobody else will be able to get the code to work (that
-  code fails on Andy's computer)
+- It's a good bet that nobody else will be able to get the code to work
+  - the above code fails on Andy's computer and gives a warning
 
 - It probably won't work on your next machine either
 
@@ -253,6 +253,7 @@ class: left
 ### File naming standards
 
 - R code file names should end in .R
+
 - File should be named with small letters only with words separated by dashes or underscored. eg.
   `utilities.R`, `plot-biomass.R`, `table-decisions.R`, `load-model-files.R`
 - R source files should contain one function and the filename should be the same
@@ -288,11 +289,11 @@ class: left
 
 - Standards apply to names for all functions, variables, and columns in data frames
 - Use **snake case** in R
+  - snake_case - `spatial_area` (Python variable names, R names)
 - Some different standards include:
   - flatcase - `spatialarea` (Java package names)
   - CapitalCamelCase - `SpatialArea` (C++ names, Java class names)
   - lowerCamelCase - `spatialArea` (Java variable names)
-  - snake_case - `spatial_area` (Python variable names, R names)
   - UPPER_SNAKE_CASE - `SPATIAL_AREA` (Constants in many languages)
   - dotted.case - `spatial.area` (Some base R functions)
 - The worst thing to do is some combination of styles eg. `spatial_AREA.newvar`
