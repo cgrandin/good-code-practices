@@ -69,7 +69,7 @@ style_mono_accent(
 ```
 
 ---
-class: center, middle, inverse, bg_matrix
+class: center, middle, inverse
 
 # Compilation vs. Interpretation
 
@@ -95,7 +95,7 @@ class: left
 - Examples of interpreted languages are Python, Perl, Lisp, and R
 
 ---
-class: center, middle, inverse, bg_fire
+class: center, middle, inverse
 
 # Paths and file organization
 
@@ -153,7 +153,7 @@ here::dr_here()
 ```
 
 ---
-class: left, bg_bomb
+class: left
 
 ### Changing directories in code
 
@@ -166,7 +166,8 @@ d <- read.csv(file.path("data", "mydata.csv"))
 message(getwd())
 ```
 
-- It's a good bet that nobody else will be able to get the code to work
+- It's a good bet that nobody else will be able to get the code to work (that
+  code fails on Andy's computer)
 
 - It probably won't work on your next machine either
 
