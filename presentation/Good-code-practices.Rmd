@@ -104,11 +104,11 @@ class: center, middle, inverse, bg_fire
 > `setwd("C:\Users\me\path\only\I\have")`
 >
 > "I will come into your office and SET YOUR COMPUTER ON FIRE"
-> 
+>
 > "If the first line of your R script is"
 >
 > `rm(list = ls())`
-> 
+>
 > "I will come into your office and SET YOUR COMPUTER ON FIRE"
 >
 > `r tufte::quote_footer('- Jenny Bryan')`
@@ -126,7 +126,7 @@ class: left
 
 - Example:
     - If you have data in file called `mydata.csv` somewhere on your computer, create a `data` directory as a subdirectory of your project directory and place `mydata.csv` in there
-    
+
     - *Anywhere* in your project code, reference that `data` directory like this: `here::here("data")`
 
 --
@@ -189,12 +189,12 @@ path <- "github/main/project"
 
 - Or better yet, for complete platform-independence use `file.path()`:
 ```{r, file-path, echo = TRUE}
-file.path("github", "main", "project") 
+file.path("github", "main", "project")
 ```
 
 - Notice that that command has the same syntax as `here::here()`:
 ```{r, here-here-similar-to-file-path, echo = TRUE}
-here::here("github", "main", "project") 
+here::here("github", "main", "project")
 ```
 
 ---
@@ -207,7 +207,7 @@ class: left
   `utilities.R`, `plot-biomass.R`, `table-decisions.R`, `load-model-files.R`
 - R source files should contain one function and the filename should be the same
   as the function name except with dashes as separators instead of underscores
-  
+
   eg. file `plot-biomass.R` contains one function called `plot_biomass()`
 
 - Exceptions to the one-file-rule are files like `utilities.R` which have small
@@ -245,7 +245,7 @@ class: left
   - snake_case - `spatial_area` (Python variable names, R names)
   - UPPER_SNAKE_CASE - `SPATIAL_AREA` (Constants in many languages)
   - dotted.case - `spatial.area` (Some base R functions)
-- The worst thing to do is some combination of styles eg. `spatial_AREA.newvar` 
+- The worst thing to do is some combination of styles eg. `spatial_AREA.newvar`
 
 
 ---
@@ -350,7 +350,7 @@ class: center, middle, inverse
 # Standardizing your coding style
 
 > "Good coding style is like using correct punctuation. You can manage without it, but it sure makes things easier to read."
-> 
+>
 > `r tufte::quote_footer('- Hadley Wickham')`
 
 ---
@@ -408,7 +408,7 @@ if(x >= 0.5){
   print("Lower 50th")
 }
 ```
-- These are just functions with syntactic sugar 
+- These are just functions with syntactic sugar
 
 
 ---
@@ -468,12 +468,12 @@ Example of good code style using dplyr and pipes (`%>%`) mixed with ggplot and `
 ```{r good-code-style-pipes, echo = TRUE, eval = FALSE}
 library(dplyr)
 library(ggplot2)
-mtcars %>% 
+mtcars %>%
   mutate(am = ifelse(am == 0,
                      "Automatic",
-                     "Standard")) %>% 
+                     "Standard")) %>%
   ggplot(aes(x = am, y = hp)) +
-  geom_point() + 
+  geom_point() +
   labs(y = "Gross horsepower",
        x = "Transmission")
 ```
@@ -585,7 +585,7 @@ class: left
 
 ### Global variables are bad
 
-- Global variables are not a good idea in any language 
+- Global variables are not a good idea in any language
   - Any function can read or write to them which means the global state of the
     program can change in many ways at any time
   - As the project complexity increases, keeping track of these changes becomes
@@ -621,7 +621,7 @@ power_list <- function(lst, ...){
 }
 power_list(6:9, 3)
 ```
-  
+
   This is caused by default arguments being set with the form `j = j` in the function declaration and can be easily fixed by changing the argument name like this
   ```{r fix-promise-error, echo = TRUE, eval = TRUE}
   j <- function(a, b, func){
@@ -708,9 +708,9 @@ num_rows <- 1000
 
 # tibble::tibble(row = 1:num_rows,
 #                number = sample(1:50, num_rows, replace = TRUE),
-#                letter = letters[sample(1:26, num_rows, replace = TRUE)]) %>% 
-#   mutate(number = as.character(number)) %>% 
-#   tidyr::pivot_longer(cols = c("number", "letter"), names_to = "type", values_to = "value") %>% 
+#                letter = letters[sample(1:26, num_rows, replace = TRUE)]) %>%
+#   mutate(number = as.character(number)) %>%
+#   tidyr::pivot_longer(cols = c("number", "letter"), names_to = "type", values_to = "value") %>%
 #   ggplot2::ggplot(aes(x = value, y = type)) +
 #   ggplot2::geom_bar(fill = "#0000FF4D")
 ```
@@ -726,14 +726,14 @@ One thing that come up quite often is that you have a list of data frames that n
 One reason this happens is if you have N simulations and you want to append the simulation number to each data frame, and then merge those data frames into one large one so that the data are in the correct format for `ggplot` plots.
 ```{r fake-sim, echo = TRUE, eval = FALSE}
 # Split the mtcars data frame by column `carb` into a list of data frames
-lst <- mtcars %>% 
+lst <- mtcars %>%
   tibble::as_tibble(rownames = "make") %>%
   dplyr::group_by(carb) %>%
   dplyr::group_split()
 
 df <- purrr::map2(lst, seq_along(lst), ~{
   .x %>% dplyr::mutate(group_num = .y)
-}) %>% 
+}) %>%
   purrr::map_df(~{.x})
 
 print(df, n = 100)
