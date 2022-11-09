@@ -15,7 +15,9 @@ output:
       ratio: 16:9
 header-includes:
   - \usepackage{animate}
+
 ---
+class: inverse
 
 background-image: url(img/obi-wan.jpg)
 background-size: contain
@@ -57,7 +59,8 @@ ggplot2::theme_set(theme_pbs())
 ```{r xaringan-themer, include=FALSE, warning=FALSE}
 library(xaringanthemer)
 style_mono_accent(
-  base_color = "#1c5253",# Matte green
+  #base_color = "#1c5253",# Matte green
+  base_color = "#0B83B7", # Sky blue
   #base_color = "#cc6600ff", # Fall orange
   header_font_google = google_font("Josefin Sans"),
   text_font_google   = google_font("Montserrat", "300", "300i"),
@@ -163,7 +166,7 @@ d <- read.csv(file.path("data", "mydata.csv"))
 message(getwd())
 ```
 
-- It almost certain nobody else will be able to get the code to work
+- It's a good bet that nobody else will be able to get the code to work
 
 - It probably won't work on your next machine either
 
@@ -184,31 +187,14 @@ path <- "github\\main\\project"
 path <- "github/main/project"
 ```
 
-- Or better yet, for complete platform-independance use `file.path()`:
-```r
-path <- file.path("github", "main", "project") 
+- Or better yet, for complete platform-independence use `file.path()`:
+```{r, file-path, echo = TRUE}
+file.path("github", "main", "project") 
 ```
 
----
-class: left
-
-### Paths and filenames (4)
-
-- Use `file.path()` to bind paths and filenames instead of pasting slashes in. It's too hard to keep track of
-  whether or not slashes have been pasted in previously:
-```{r file-path-pasting, echo = TRUE, eval = TRUE}
-data_file <- file.path("github/main/project", "data_file.csv")
-print(data_file)
-```
-- `here::here()` does this automatically, so just use that: 
-```{r here-here-pasting, echo = TRUE, eval = TRUE}
-data_file <- here::here("github/main/project", "data_file.csv")
-print(data_file)
-```
-- If you want to be absolutely perfect you would do it this way:
-```{r here-here-perfect-pasting, echo = TRUE, eval = TRUE}
-data_file <- here::here("github", "main", "project", "data_file.csv")
-print(data_file)
+- Notice that that command has the same syntax as `here::here()`:
+```{r, here-here-similar-to-file-path, echo = TRUE}
+here::here("github", "main", "project") 
 ```
 
 ---
@@ -216,11 +202,11 @@ class: left
 
 ### File naming standards
 
-- File names should end in .R
-- File should be named with small letters only with words separated by dashes. eg.
+- R code file names should end in .R
+- File should be named with small letters only with words separated by dashes or underscored. eg.
   `utilities.R`, `plot-biomass.R`, `table-decisions.R`, `load-model-files.R`
 - R source files should contain one function and the filename should be the same
-  as the function name except with dashes as separators instead of underscores.
+  as the function name except with dashes as separators instead of underscores
   
   eg. file `plot-biomass.R` contains one function called `plot_biomass()`
 
@@ -230,6 +216,21 @@ class: left
 ```{r r-source-filenames-pic, echo = FALSE, eval = TRUE, out.width = 300}
 knitr::include_graphics("img/r-source-filenames.jpg")
 ```
+
+---
+class: center, middle, inverse, bg_fir
+
+# Variable naming and organization
+
+> "There are only two hard things in Computer Science: cache invalidation and naming things."
+
+-- Phil Karlton
+
+> "There are only two hard things in Computer Science: cache invalidation, naming things, and off-by-one errors"
+
+-- Unknown
+
+
 ---
 class: left
 
@@ -273,14 +274,14 @@ class: center
 - If you come from other languages, the dot typically means that what is to the left is a class and
   what is to the right is a method of that class (C++, Java) so this is very confusing for those people.
   eg. in C++: `string.size()`, in Java: `Socket.connect()`
-- **Dotted syntax in R is used to denote a custom function for a class**
+- **Dotted syntax in R is supposed to be used to denote a custom function for a class**
 ]
 --
 .pull-left[.left[
 ```{r dotted-syntax, echo = TRUE, fig.show = "hide"}
-x <- 1:10
+a <- 1:10
 par(mar = c(2, 2, 0, 0))
-plot(x, type = "l", lwd = 3, col = "blue")
+plot(a, type = "l", lwd = 3, col = "blue")
 ```
 ]]
 .pull-right[.left[
@@ -290,12 +291,13 @@ plot(x, type = "l", lwd = 3, col = "blue")
 --
 .pull-left[.left[
 ```{r dotted-syntax-2, echo = TRUE, fig.show = "hide"}
-class(x) <- c(class(x), "revseries")
+b <- 1:10
+class(b) <- c(class(b), "revseries")
 plot.revseries <- function(d, ...){
   plot.default(rev(d), ...)
 }
 par(mar = c(2, 2, 0, 0))
-plot(x, type = "l", lwd = 3, col = "blue")
+plot(b, type = "l", lwd = 3, col = "blue")
 ```
 ]]
 .pull-right[.left[
@@ -304,7 +306,7 @@ plot(x, type = "l", lwd = 3, col = "blue")
 ]]
 .pull-left[.left[
 ```{r class-check-series, echo = TRUE}
-class(x)
+class(b)
 ```
 ]]
 
