@@ -210,13 +210,13 @@ class: left
 
 ```{r, never-setwd, echo = TRUE, error = TRUE}
 message(getwd())
-setwd("d:/github/main/good-code-practices")
-d <- read.csv(file.path("data", "mydata.csv"))
+setwd("d:/github/main/good-code-practices/data")
+d <- read.csv("mydata.csv")
 message(getwd())
 ```
 
 - It's a good bet that nobody else will be able to get the code to work
-  - the above code fails on Andy's computer and gives a warning
+  - the above code fails on Andy's computer with an error
 
 - It probably won't work on your next machine either
 
@@ -254,7 +254,7 @@ class: left
 
 - R code file names should end in .R
 
-- File should be named with small letters only with words separated by dashes or underscored. eg.
+- File should be named with small letters only with words separated by dashes or underscores. eg.
   `utilities.R`, `plot-biomass.R`, `table-decisions.R`, `load-model-files.R`
 - R source files should contain one function and the filename should be the same
   as the function name except with dashes as separators instead of underscores
@@ -264,9 +264,31 @@ class: left
 - Exceptions to the one-file-rule are files like `utilities.R` which have small
   utility functions that each fit on one screen
 
+.pull-left[
 ```{r r-source-filenames-pic, echo = FALSE, eval = TRUE, out.width = 300}
 knitr::include_graphics("img/r-source-filenames.jpg")
 ```
+]
+.pull-right[
+```{r r-small-function-example, echo = TRUE, eval = FALSE}
+vec2df <- function(vec, nms = NULL){
+  if(!is.null(nms) && length(vec) != length(nms)){
+    stop("The number of names supplied does not match the number ",
+         "of elements in `vec`", call. = FALSE)
+    names(df) <- nms
+  }
+  df <- vec |>
+    enframe(name = NULL) |>
+    t() |>
+    as_tibble()
+
+  if(!is.null(df)){
+    names(df) <- nms
+  }
+  df
+}
+```
+]
 
 ---
 class: center, middle, inverse, bg_fir
@@ -288,16 +310,30 @@ class: left
 ### Variable naming standards
 
 - Standards apply to names for all functions, variables, and columns in data frames
-- Use **snake case** in R
-  - snake_case - `spatial_area` (Python variable names, R names)
+
 - Some different standards include:
+
   - flatcase - `spatialarea` (Java package names)
+
   - CapitalCamelCase - `SpatialArea` (C++ names, Java class names)
+
   - lowerCamelCase - `spatialArea` (Java variable names)
+
+  - snake_case - `spatial_area` (Python variable names, R names)
+
   - UPPER_SNAKE_CASE - `SPATIAL_AREA` (Constants in many languages)
+
   - dotted.case - `spatial.area` (Some base R functions)
+
 - The worst thing to do is some combination of styles eg. `spatial_AREA.newvar`
 
+- Use **snake case** in R
+
+```{r r-snake-case-example, echo = TRUE, eval = FALSE}
+model_fn_lst <- list()
+model_fn_lst$base_model <- here::here("models", "base-model", "base-model.rep")
+model_fn_lst$sens_model_1 <- here::here("models", "sens-models", "sens-model-1.rep")
+```
 
 ---
 class: left
@@ -307,25 +343,25 @@ class: left
 - Base R functions use different standards including dotted, snake case, camel case, upper camel case,
   and flat case. These are sometimes even mixed up in a single function.
 
-- This is a major oversight and confusing for everyone
+- This is a major oversight and confusing for everyone, but it is legacy and they can't change it now.
 
-- The **data.frame()** function has arguments with two different types of naming syntax and a
-  function call with a different syntax:
+- One example is the **data.frame()** function which has arguments with two different types of naming syntax and
+  some function calls inside with several different syntaxes - **anyDuplicated()** and **gettextf()**:
 --
-```{r data-frame-ex, echo=TRUE, size="tiny"}
+```{r data-frame-ex, echo = TRUE, size = "tiny"}
 data.frame
 ```
 
 ---
 class: center
 
-### Don't use dotted names
+### Don't use dotted names for variable names
 
 .left[
 - If you come from other languages, the dot typically means that what is to the left is a class and
   what is to the right is a method of that class (C++, Java) so this is very confusing for those people.
   eg. in C++: `string.size()`, in Java: `Socket.connect()`
-- **Dotted syntax in R is supposed to be used to denote a custom function for a class**
+- **Dotted syntax in R is meant to be used to signify the a method of a class.**  eg. `plot.default()`
 ]
 --
 .pull-left[.left[
@@ -339,16 +375,22 @@ plot(a, type = "l", lwd = 3, col = "blue")
 ```{r plot-dotted-syntax, ref.label="dotted-syntax", out.height = 125}
 ```
 ]]
+
+```{r remove-a, echo = FALSE, eval = FALSE}
+rm(a)
+```
 --
 .pull-left[.left[
 ```{r dotted-syntax-2, echo = TRUE, fig.show = "hide"}
-b <- 1:10
-class(b) <- c(class(b), "revseries")
-plot.revseries <- function(d, ...){
-  plot.default(rev(d), ...)
-}
+a <- 1:10
+
+class(a) <- c(class(a), "revseries") #<<
+plot.revseries <- function(d, ...){  #<<
+  plot.default(rev(d), ...)          #<<
+}                                    #<<
+
 par(mar = c(2, 2, 0, 0))
-plot(b, type = "l", lwd = 3, col = "blue")
+plot(a, type = "l", lwd = 3, col = "blue")
 ```
 ]]
 .pull-right[.left[
@@ -357,7 +399,7 @@ plot(b, type = "l", lwd = 3, col = "blue")
 ]]
 .pull-left[.left[
 ```{r class-check-series, echo = TRUE}
-class(b)
+class(a)
 ```
 ]]
 
