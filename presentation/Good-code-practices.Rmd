@@ -45,9 +45,8 @@ knitr::opts_chunk$set(
   cache.comments = FALSE,
   dev = "png",
   dpi = fig_dpi,
-  fig.align = fig_align
-)
-
+  fig.align = fig_align)
+  
 options(htmltools.dir.version = FALSE)
 library(dplyr)
 library(ggplot2)
@@ -206,7 +205,7 @@ class: left
 
 ### Changing directories in code
 
-- Your code should *NEVER* contain the `setwd()` command
+- Your code should *NEVER* contain the `setwd()` command. There's no need to change directories, ever.
 
 ```{r, never-setwd, echo = TRUE, error = TRUE}
 message(getwd())
@@ -215,10 +214,20 @@ d <- read.csv("mydata.csv")
 message(getwd())
 ```
 
-- It's a good bet that nobody else will be able to get the code to work
-  - the above code fails on Andy's computer with an error
+- It's a good bet that nobody else will be able to get the code to work.
+  - the above code fails on Andy's computer with an error.
 
-- It probably won't work on your next machine either
+- It probably won't work on your next machine either.
+
+- You have to manually navigate back to your project working directory if something breaks in your code `r emo::ji("facepunch")`.
+
+- Instead do this:
+
+```{r, never-setwd-instead, echo = TRUE, error = TRUE}
+message(getwd())
+d <- read.csv(here::here("data", "mydata.csv")) #<<
+message(getwd())
+```
 
 
 ---
@@ -404,41 +413,6 @@ class(a)
 ]]
 
 ---
-class: left
-
-### Debug session - Appending values to a vector of factors
-
-When you run the following code:
-
-```{r factor-example, echo = TRUE, eval = TRUE}
-j <- factor(1:10)
-print(j)
-print(class(j))
-
-
-k <- c(j, 11)
-print(k)
-print(class(k))
-```
-the result is a numeric vector. But what if you wanted a factor vector
-returned instead?
-
-How can you change the definition of `c()` without messing up all the
-calls to `c()` for other types?
---
-```{r c-factor-default, echo = TRUE, eval = FALSE}
-c.factor <- function (..., recursive = TRUE){
-  x <- lapply(list(...), function(.x) as.factor(.x))
-  y <- unlist(x, recursive = recursive)
-  if(inherits(y, "factor") &&
-       all(vapply(x, inherits, NA, "ordered")) &&
-      (length(unique(lapply(x, levels))) == 1L))
-    class(y) <- c("ordered", "factor")
-  y
-}
-```
-
----
 class: center, middle, inverse
 # Standardizing your coding style
 
@@ -451,58 +425,93 @@ class: left
 
 ### Syntax style standards
 
-We may have to live with the non-adherence of variable naming present in R's base code and that of some package developers, but we can and should follow best practices for variable naming syntax.
+We can and should follow best practices for variable naming syntax despite R base code having inconsistencies.
 
 For R, this is covered very well in the [Advanced-R style guide](http://adv-r.had.co.nz/Style.html)
 and the [Tidyverse style guide](https://style.tidyverse.org/).
 
 The main points are:
-- Use all lowercase letters for variable names, with words being separated by underscores.
-  Do not use capital letters
-- Place spaces around all infix operators (**+**, **-**, **/** , *****, **=**, **,**, **%in%**).
-  This includes before indices in array indexing, e.g `dat[1, , 2]`, `arr_x[1, 1, ]`
-- Opening brackets of all types should never go on their own lines
+
+- Use **snake_case** for naming
+
+- Place spaces around all infix operators (**<-**, **+**, **-**, **/** , *****, **=**, **,**, **%in%**).
+  This includes before indices in array indexing. Examples of this are:
+  
+  - `power_num <- function(a = 2, pow = 4)`
+  - `y <- function(x, m, b){m * x + b}`
+  - `dat[1, , 2]`
+  - `arr_x[1, 1, ]`
+  - `my_dataframe[, col_name_1]`
+
 - Indent two spaces inside functions, if conditionals, and for loops
+
 - use **<-** for assignment, not **=**
-- Place a space before left parenthesis unless it is a function call. I disagree
-  with placing spaces after `if`, `for`, and `while` statements
+
+- Place a space before left parenthesis unless it is a function call.
+
+<style type="text/css">
+code.r{ /* Code block */
+    font-size: 10px;
+}
+</style>
 
 ---
 class: left
 
-### Syntax style standards
+### Syntax style standards - example of good code
 
-- Here's what the style guide suggests:
-```{r if-for-while-spacing, echo = TRUE, eval = FALSE}
-if (x >= 0.5) {
- done <- FALSE
- while (!done) {
-   for (i in 1:10) {
-     print(letters[sample(1:26, i)])
-   }
-   done <- TRUE
- }
-} else {
- print("Lower 50th")
-}
-```
-- Here's how I would write it:
-```{r if-for-while-nospacing, echo = TRUE, eval = TRUE}
-x <- 0.9
-if(x >= 0.5){
-  done <- FALSE
-  while(!done){
-    for(i in 0:4){
-      print(letters[c(1, 5, 9, 15, 21) + i])
-    }
-    done <- TRUE
+.pull-left-66[.left[
+```{r batman, echo = TRUE, size = "tiny", fig.show = "hide"}
+batman <- function(line_thick = 1){
+  sc <- function(x) sqrt(1 - x ^ 2)
+  el <- function(x) 3 * sc(abs(x) / 7)
+  nl <- function(x) (-1) * el(x)
+  sh <- function(x) 4.2 - 0.5 * abs(x) - 2.8 * sc(0.5 * abs(x) - 0.5)
+  bf <- function(x) sc(abs(2 - abs(x)) - 1) - x ^ 2 / 11 + 0.5 * abs(x) - 3
+  cr <- data.frame(x = c(0, 0.5, 0.8, 1), y = c(1.7, 1.7, 2.6, 0.9))
+  cl <- data.frame(x = -cr$x, y = cr$y)
+  plot_create <- function(fun, xmin, xmax){
+    list(left_plot = stat_function(fun = fun,
+                                   xlim = c(xmin,xmax),
+                                   size = line_thick),
+         right_plot = stat_function(fun = fun,
+                                    xlim = c(-xmax, -xmin),
+                                    size = line_thick))
   }
-}else{
-  print("Lower 50th")
+  g <- ggplot(data.frame(x = c(-7, 7), y = c(-3, 3)), aes(x, y)) +
+    theme_bw() +
+    theme(panel.border = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.line = element_blank(),
+          axis.text = element_blank(),
+          axis.ticks = element_blank()) +
+    labs(x = "", y = "")
+  upper_wing_plot <- plot_create(fun = el, xmin = 3, xmax = 7)
+  lower_wing_plot <- plot_create(fun = nl, xmin = 4, xmax = 7)
+  g <- g +
+    upper_wing_plot$left_plot +
+    upper_wing_plot$right_plot +
+    lower_wing_plot$left_plot +
+    lower_wing_plot$right_plot
+  sh_plot <- plot_create(fun = sh, xmin = 1, xmax = 3)
+  g <- g +
+    sh_plot$left_plot +
+    sh_plot$right_plot
+  bt_plot <- plot_create(fun = bf, xmin = 0, xmax = 4)
+  g +
+    bt_plot$left_plot +
+    bt_plot$right_plot +
+    geom_path(data = cr, na.rm = TRUE, size = line_thick) +
+    geom_path(data = cl, na.rm = TRUE, size = line_thick)
 }
+batman(5)
 ```
-- These are just functions with syntactic sugar
-
+]]
+.pull-right-33[.left[
+```{r plot-batman, ref.label="batman", out.height = 125}
+```
+]]
 
 ---
 class: left
@@ -583,6 +592,45 @@ Always place new items piped with `%>%` or added to ggplots with `+` on their ow
 
 Other functions with multiple arguments should have their arguments on their own lines as well. See the `ifelse()` in the above example.
 ]
+
+
+---
+class: left
+
+### Argument organization
+
+- Functions have arguments which should be organized.
+
+- Often they look like this (from the [data table package source on GitHub](https://github.com/Rdatatable/data.table/blob/master/R/between.R)):
+
+```{r data-table-code-bad-arguments, echo = TRUE, eval = FALSE}
+between = function(x, lower, upper, incbounds=TRUE, NAbounds=TRUE, check=FALSE) {
+  if (is.logical(x)) stopf("between has been passed an argument x of type logical")
+  if (is.logical(lower)) lower = as.integer(lower)   # typically NA (which is logical type)
+  if (is.logical(upper)) upper = as.integer(upper)   # typically NA (which is logical type)
+# Code continues ...
+```
+
+- Instead write arguments each on their own line:
+
+```{r data-table-code-good-arguments, echo = TRUE, eval = FALSE}
+between <- function(x,
+                    lower,
+                    upper,
+                    incbounds = TRUE,
+                    NAbounds = TRUE,
+                    check = FALSE) {
+  if (is.logical(x)) stopf("between has been passed an argument x of type logical")
+  if (is.logical(lower)) lower = as.integer(lower)   # typically NA (which is logical type)
+  if (is.logical(upper)) upper = as.integer(upper)   # typically NA (which is logical type)
+# Code continues ...
+```
+
+- This allows you to easily comment out individual arguments, and it is much easier to read
+
+- You will appreciate this idea when you see multiple lines of comma-separated arguments
+  and try to read them
+
 
 ---
 class: center, middle, inverse
