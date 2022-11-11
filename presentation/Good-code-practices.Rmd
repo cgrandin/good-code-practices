@@ -608,6 +608,7 @@ batman(5)
 .pull-right[.left[
 ```{r plot-batman, ref.label="batman", out.height = 125}
 ```
+[Original source code and explanation](https://charlotte-ngs.github.io/BatmanPlot/BatmanPlotPost.html)
 ]]
 
 ---
@@ -726,21 +727,24 @@ In most computer languages, variables are **strongly typed**. Here is an example
 - This produces fewer runtime bugs, because the compiler will tell you right away if you make a call to the function with the wrong type.
 
 .pull-left[.left[
-```{C example-string-typing, echo = TRUE, eval = TRUE}
-#include <iostream>
-using namespace std;
+```{r example-string-typing, engine = "Rcpp", echo = TRUE, eval = TRUE}
+#include <Rcpp.h>
+using namespace Rcpp;
 
-double mult(double a, double b){
-  double r;
-  r = a * b;
-  return r;
-}
+// [[Rcpp::export]]
+int fibonacci(int x) {
 
-int main (){
-  double z;
-  z = mult(5, 3);
-  cout << "The result is " << z;
+  bool base_num = x == 0 || x == 1;
+
+  if(base_num)
+    return(x);
+
+  return(fibonacci(x - 1)) + fibonacci(x - 2);
 }
+```
+
+```{r fib, echo = TRUE, eval = TRUE}
+fibonacci(12)
 ```
 ]]
 
@@ -759,6 +763,7 @@ mult <- function(a, b){
   r <- a * b
   r
 }
+
 mult(5, 3)
 ```
 ]]
@@ -767,26 +772,66 @@ mult(5, 3)
 **Error - wrong type in call**
 ```{r mult-data-frame-with-chars, echo = TRUE, eval = TRUE, error = TRUE}
 d1 <- data.frame(j = c(1, 2, 3), k = c(4, 5, "a"))
+
 mult(5, d1)
 ```
 ]]
 
+- Weak typing leads to runtime errors. The only way in R to make sure the correct types are being passed as function arguments is to do **Argument verification**
+
+- **Argument verification** is essentially checking the types and dimensions of arguments at the beginning of a function.
+
+
 ---
-class: center
+class: left
 
-### Variable typing (3)
+### Argument validation
+- For strongly typed languages, this is done by the compiler automatically and does not add overhead to the runtime performance.
+- For weakly typed languages, any code added in the function to check types is executed at runtime and will make your code slow.
+- There is a tradeoff here, fast code with no argument validation or slow code with complete validation.
 
-.left[
-Well, maybe that wasn't so bad, but as the author of the function have you thought of what will happen with **every** data type and dimension of those data types? What about this:
-```{r mult-mat, echo = TRUE, eval = TRUE, error=TRUE}
-k <- data.frame(j = c(1, 2, 3), k = c(4, 5, 6), i = c(10, 11, 12))
-mult(d, k)
+.pull-left[.left[
+```{r arg-validation, echo = TRUE, eval = FALSE, fig.show = "hide"}
+get_model_info <- function(model_match, case_sens = TRUE){
+  
+  if(!"character" %in% class(model_match)){
+    stop("`model_match` does not have class character", call. = FALSE)
+  }
+  if(length(model_match) > 1){
+    stop("length of `model_match` must be 1, you passed a length ",
+         length(model_match), " vector", call. = FALSE)
+  }
+  if(!"logical" %in% class(case_sens)){
+    stop("`case_sens` does not have class logical", call. = FALSE)
+  }
+  if(length(case_sens) > 1){
+    stop("length of `case_sens` must be 1, you passed a length ",
+         length(case_sens), " vector", call. = FALSE)
+  }
+  orig_car_dat <- mtcars |> as_tibble(rownames = "model")
+  car_dat <- orig_car_dat
+  if(!case_sens){
+    model_match <- tolower(model_match)
+    car_dat$model <- tolower(car_dat$model)
+  }
+  grp <- grep(model_match, car_dat$model)
+  if(!length(grp)){
+    stop("`model_match` does not match any model names in the ",
+         "table", call. = FALSE)
+  }
+  orig_car_dat |> select(mpg, cyl, disp, hp, am, gear) |> slice(grp)
+}
+
+get_model_info(2)
+get_model_info(c("mazda", "toyota"))
+get_model_info("datsun", 1)
+get_model_info("mazda", case_sens = FALSE)
 ```
-
-This is obvious here, but when errors like this happen deep inside a function in someone else's package can be very frustrating. It can mean that you have to download the package source and debug the package.
-
-These errors can be caught at the beginning of the function by checking all the variables for correct type and dimension. This is called **Argument verification**
-]
+]]
+.pull-right[.left[
+```{r arg-validation-show, ref.label = "arg-validation", error = TRUE}
+```
+]]
 
 ---
 class: center
