@@ -819,7 +819,7 @@ get_model_info <- function(model_match, case_sens = TRUE){
     stop("`model_match` does not match any model names in the ",
          "table", call. = FALSE)
   }
-  orig_car_dat |> select(mpg, cyl, disp, hp, am, gear) |> slice(grp)
+  orig_car_dat |> select(model, mpg, cyl, disp, hp, am, gear) |> slice(grp)
 }
 
 get_model_info(2)
