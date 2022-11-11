@@ -22,6 +22,16 @@ class: inverse
 background-image: url(img/obi-wan.jpg)
 background-size: contain
 
+<style type="text/css">
+code.r{ /* Code block */
+  font-size: 10px;
+} 
+h3{
+  margin-bottom: 0;
+  padding: 0;
+}
+</style>
+
 ```{r setup, include=FALSE, echo=FALSE, fig.width=8, fig.height=8}
 # paste this into the console before running `xaringan::inf_mr("twg_01.Rmd")`
 # to make your entries faster (fraction of a second)
@@ -364,24 +374,24 @@ class: left
 
 - This is a major oversight and confusing for everyone, but it is legacy and they can't change it now.
 
-- One example is the **data.frame()** function which has arguments with two different types of naming syntax and
-  some function calls inside with several different syntaxes - **anyDuplicated()** and **gettextf()**:
+- One example is the `data.frame()` function which has arguments with two different types of naming syntax and
+  some function calls inside with several different syntaxes - `anyDuplicated()` and `gettextf()`:
 --
 ```{r data-frame-ex, echo = TRUE, size = "tiny"}
 data.frame
 ```
 
 ---
-class: center
+class: left
 
 ### Don't use dotted names for variable names
 
-.left[
 - If you come from other languages, the dot typically means that what is to the left is a class and
   what is to the right is a method of that class (C++, Java) so this is very confusing for those people.
   eg. in C++: `string.size()`, in Java: `Socket.connect()`
 - **Dotted syntax in R is meant to be used to signify the a method of a class.**  eg. `plot.default()`
-]
+
+
 --
 .pull-left[.left[
 ```{r dotted-syntax, echo = TRUE, fig.show = "hide"}
@@ -391,7 +401,7 @@ plot(a, type = "l", lwd = 3, col = "blue")
 ```
 ]]
 .pull-right[.left[
-```{r plot-dotted-syntax, ref.label="dotted-syntax", out.height = 125}
+```{r plot-dotted-syntax, ref.label="dotted-syntax", out.height = 150}
 ```
 ]]
 
@@ -413,7 +423,7 @@ plot(a, type = "l", lwd = 3, col = "blue")
 ```
 ]]
 .pull-right[.left[
-```{r plot-dotted-syntax-2, ref.label="dotted-syntax-2", out.height = 125}
+```{r plot-dotted-syntax-2, ref.label="dotted-syntax-2", out.height = 150}
 ```
 ]]
 .pull-left[.left[
@@ -459,19 +469,13 @@ The main points are:
 
 - Place a space before left parenthesis unless it is a function call.
 
-<style type="text/css">
-code.r{ /* Code block */
-    font-size: 10px;
-}
-</style>
 
 ---
 class: left
 
 ### Syntax style standards - Poor vs properly formatted code
-
 .pull-left[.left[
-#### Poorly formatted
+**Poorly formatted**
 ```{r batman-bad, echo = TRUE, eval = FALSE}
 batman <- function(line_thick = 1){
   sc <- function(x) sqrt(1 - x ^ 2)
@@ -489,7 +493,7 @@ batman <- function(line_thick = 1){
     axis.line = element_blank(), axis.text = element_blank(),axis.ticks = element_blank()) + labs(x = "", y = "")
   upper_wing_plot<- plot_create(fun = el, xmin = 3, xmax = 7)
   lower_wing_plot <-plot_create(fun = nl, xmin = 4, xmax = 7)
-  g <- g +upper_wing_plot$left_plot+upper_wing_plot$right_plot+lower_wing_plot$left_plot +lower_wing_plot$right_plot
+ g <- g +upper_wing_plot$left_plot+upper_wing_plot$right_plot+lower_wing_plot$left_plot +lower_wing_plot$right_plot
   sh_plot <- plot_create(fun = sh, xmin = 1, xmax = 3)
   g <- g +sh_plot$left_plot +
    sh_plot$right_plot
@@ -498,10 +502,9 @@ batman <- function(line_thick = 1){
 }
 batman(5)
 ```
-.vertical-row[]
 ]]
-.pull-left[.left[
-#### Properly formatted
+.pull-right[.left[
+**Properly formatted**
 ```{r batman-good, echo = TRUE, fig.show = "hide"}
 batman <- function(line_thick = 1){
   sc <- function(x) sqrt(1 - x ^ 2)
@@ -554,9 +557,7 @@ batman(5)
 class: left
 
 ### Syntax style standards - Properly formatted code run
-
 .pull-left[.left[
-Well written code
 ```{r batman, echo = TRUE, fig.show = "hide"}
 batman <- function(line_thick = 1){
   sc <- function(x) sqrt(1 - x ^ 2)
@@ -612,121 +613,101 @@ batman(5)
 ---
 class: left
 
-### Syntax style standards (2)
+### Syntax style standards - dplyr, ggplot, and pipes
 
-Example of good code style:
-
-```{r good-code-style, echo = TRUE, eval = TRUE}
-latex_math_bold <- function(txt){
-  paste0("$\\mathbf{", txt, "}$")
-}
-
-latex_bold <- function(txt){
-  paste0("\\textbf{", txt, "}")
-}
-
-latex_mlc <- function(latex_vec,
-                      make_bold = TRUE,
-                      math_bold = FALSE){
-  if(make_bold){
-    if(math_bold){
-      latex_vec <- purrr::map_chr(latex_vec, latex_math_bold)
-    }else{
-      latex_vec <- purrr::map_chr(latex_vec, latex_bold)
-    }
-  }
-  latex_str <- paste(latex_vec, collapse = " \\\\ ")
-  paste0("\\mlc{", latex_str, "}")
-}
-
-
-latex_mlc(c("Coastwide", "Catch", "(tonnes)"))
-```
-
-- See **`gfutilities::summarize_quants()`** for a longer example with Roxygen documentation
-
----
-class: left
-
-### Syntax style standards (3)
-
-Note that
-- **if()** and **for()** are functions so there should be no space before the left parenthesis
-- the argument list has each argument on it's own line. This is easier to read and allows easy commenting-out of individual arguments
-
----
-class: center
-
-### Style suggestions (3)
-
-.left[
-Example of good code style using dplyr and pipes (`%>%`) mixed with ggplot and `+`:
-]
+Example of good code style using dplyr, ggplot (`+`), and pipes (`%>%` or `|>`):
 .pull-left[.left[
 ```{r good-code-style-pipes, echo = TRUE, eval = FALSE}
-library(dplyr)
-library(ggplot2)
-mtcars %>%
-  mutate(am = ifelse(am == 0,
-                     "Automatic",
-                     "Standard")) %>%
-  ggplot(aes(x = am, y = hp)) +
-  geom_point() +
-  labs(y = "Gross horsepower",
-       x = "Transmission")
+language <- read.csv(here::here("data", "prog-lang-data.csv")) |> 
+  tibble::as_tibble() |> 
+  dplyr::pull(2) |> 
+  strsplit(";") |> 
+  unlist() %>%
+  gsub(".*Shell.*", "Shell", .)
+
+tab <- table(language) |>
+  tibble::as_tibble()
+
+ggplot(tab,
+       aes(x = language, y = n)) +
+  geom_bar(stat = "identity",
+           color = "black",
+           fill = "blue",
+           alpha = 0.2) +
+  theme(axis.text.x = element_text(angle = 45,
+                                   hjust = 0.55,
+                                   vjust = 0.5)) +
+  scale_y_continuous(labels = scales::comma) +
+  coord_cartesian(ylim = c(0, 60000),
+                  expand = FALSE) +
+  xlab("Programming language") +
+  ylab("Frequency")
 ```
 ]]
+
 .pull-right[
 ```{r plot-good-code-style-pipes, ref.label = 'good-code-style-pipes', echo = FALSE}
 ```
 ]
-.left[
-Always place new items piped with `%>%` or added to ggplots with `+` on their own line:
+
+Always place new items piped with `%>%` or `|>`, or geoms added to ggplots with `+` on their own line:
   - Much easier to read
   - Allows them to be commented out easily
   - Less possibility of wrapping code past the end of the window frame
 
-Other functions with multiple arguments should have their arguments on their own lines as well. See the `ifelse()` in the above example.
-]
-
+Data source: [Kaggle](https://www.kaggle.com/datasets/deepakdhanoliya12/most-common-programming-languages-used-worldwide)
 
 ---
 class: left
 
-### Argument organization
+### Syntax style standards - Function arguments
 
-- Functions have arguments which should be organized.
+- Example: `x` and `y` in this power function: `pow <- function(x, y){x ^ y}`
 
-- Often they look like this (from the [data table package source on GitHub](https://github.com/Rdatatable/data.table/blob/master/R/between.R)):
+- Often they look like the [scan()](https://github.com/SurajGupta/r-source/blob/master/src/library/base/R/scan.R) function in base R.
 
+.pull-left[.left[
+**Hard to read**
 ```{r data-table-code-bad-arguments, echo = TRUE, eval = FALSE}
-between = function(x, lower, upper, incbounds=TRUE, NAbounds=TRUE, check=FALSE) {
-  if (is.logical(x)) stopf("between has been passed an argument x of type logical")
-  if (is.logical(lower)) lower = as.integer(lower)   # typically NA (which is logical type)
-  if (is.logical(upper)) upper = as.integer(upper)   # typically NA (which is logical type)
-# Code continues ...
+scan <- function (file = "", what = double(), nmax = -1L, n = -1L, sep = "", 
+    quote = if (identical(sep, "\n")) "" else "'\"", dec = ".", 
+    skip = 0L, nlines = 0L, na.strings = "NA", flush = FALSE, 
+    fill = FALSE, strip.white = FALSE, quiet = FALSE, blank.lines.skip = TRUE, 
+    multi.line = TRUE, comment.char = "", allowEscapes = FALSE, 
+    fileEncoding = "", encoding = "unknown", text, skipNul = FALSE){
+  # Function body code here
+}
 ```
-
-- Instead write arguments each on their own line:
-
+]]
+.pull-right[.left[
+**Easy to read**
 ```{r data-table-code-good-arguments, echo = TRUE, eval = FALSE}
-between <- function(x,
-                    lower,
-                    upper,
-                    incbounds = TRUE,
-                    NAbounds = TRUE,
-                    check = FALSE) {
-  if (is.logical(x)) stopf("between has been passed an argument x of type logical")
-  if (is.logical(lower)) lower = as.integer(lower)   # typically NA (which is logical type)
-  if (is.logical(upper)) upper = as.integer(upper)   # typically NA (which is logical type)
-# Code continues ...
+scan <- function (file = "",
+                  what = double(),
+                  nmax = -1L,
+                  n = -1L,
+                  sep = "", 
+                  quote = if (identical(sep, "\n")) "" else "'\"",
+                  dec = ".", 
+                  skip = 0L,
+                  nlines = 0L,
+                  na.strings = "NA",
+                  flush = FALSE, 
+                  fill = FALSE,
+                  strip.white = FALSE,
+                  quiet = FALSE,
+                  blank.lines.skip = TRUE, 
+                  multi.line = TRUE,
+                  comment.char = "",
+                  allowEscapes = FALSE, 
+                  fileEncoding = "",
+                  encoding = "unknown",
+                  text,
+                  skipNul = FALSE){
+# Function body code here
+}
 ```
-
-- This allows you to easily comment out individual arguments, and it is much easier to read
-
-- You will appreciate this idea when you see multiple lines of comma-separated arguments
-  and try to read them
-
+]]
 
 ---
 class: center, middle, inverse
@@ -734,14 +715,18 @@ class: center, middle, inverse
 # Variable Typing
 
 ---
-class: center
+class: left
 
-### Variable typing
+### Variable typing - Strong typing
 
-.left[
-In most computer languages, variables are **strongly typed**. Here is an example in C++:
+In most computer languages, variables are **strongly typed**. Here is an example in C++.
 
-```{r example-string-typing, engine = 'Rcpp', echo = TRUE, eval = FALSE}
+- In this code, **all** variables are given a datatype that they must adhere to, including the return value from the function.
+
+- This produces fewer runtime bugs, because the compiler will tell you right away if you make a call to the function with the wrong type.
+
+.pull-left[.left[
+```{C example-string-typing, echo = TRUE, eval = TRUE}
 #include <iostream>
 using namespace std;
 
@@ -757,18 +742,17 @@ int main (){
   cout << "The result is " << z;
 }
 ```
-In this code, *ALL* variables are given a datatype that they must adhere to, including the return value from the function.
-This makes coding easier, because the compiler will tell you right away if you make a call to the function with an erroneous type.
-]
+]]
 
 ---
-class: center
+class: left
 
-### Variable typing (2)
+### Variable typing - Weak typing
 
-.left[
 In R, variables are **weakly typed**. In addition, R is **interpreted**, not **compiled** so you will not know there is a problem until your code runs to that point
 
+.pull-left[.left[
+**Working code**
 ```{r example-string-typing-r, echo = TRUE, eval = TRUE}
 #' Multiply two numbers
 mult <- function(a, b){
@@ -777,20 +761,15 @@ mult <- function(a, b){
 }
 mult(5, 3)
 ```
-In this code, variables are not typed and they could be anything. If we try to run the code with a different type than intended something possibly unexpected occurs:
-```{r mult-data-frame, echo = TRUE, eval = TRUE}
-d <- data.frame(j = c(1, 2, 3), k = c(4, 5, 6))
-mult(5, d)
-```
-]
+]]
 
-.left[
-Or worse:
+.pull-right[.left[
+**Error - wrong type in call**
 ```{r mult-data-frame-with-chars, echo = TRUE, eval = TRUE, error = TRUE}
 d1 <- data.frame(j = c(1, 2, 3), k = c(4, 5, "a"))
 mult(5, d1)
 ```
-]
+]]
 
 ---
 class: center
