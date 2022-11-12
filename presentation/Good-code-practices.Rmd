@@ -522,7 +522,7 @@ batman <- function(line_thick = 1){
                                     xlim = c(-xmax, -xmin),
                                     size = line_thick))
   }
-  g <- ggplot(data.frame(x = c(-17, 17), y = c(-3, 3)), aes(x, y)) +
+  g <- ggplot(data.frame(x = c(-7, 7), y = c(-3, 3)), aes(x, y)) +
     theme_bw() +
     theme(panel.border = element_blank(),
           panel.grid.major = element_blank(),
@@ -575,7 +575,7 @@ batman <- function(line_thick = 1){
                                     xlim = c(-xmax, -xmin),
                                     size = line_thick))
   }
-  g <- ggplot(data.frame(x = c(-17, 17), y = c(-3, 3)), aes(x, y)) +
+  g <- ggplot(data.frame(x = c(-7, 7), y = c(-3, 3)), aes(x, y)) +
     theme_bw() +
     theme(panel.border = element_blank(),
           panel.grid.major = element_blank(),
@@ -608,6 +608,11 @@ batman(5)
 .pull-right[.left[
 ```{r plot-batman, ref.label="batman", out.height = 125}
 ```
+
+```{r batman-equation, out.height = 200}
+knitr::include_graphics(here::here("presentation", "img", "batman-equation.png"))
+```
+
 [Original source code and explanation](https://charlotte-ngs.github.io/BatmanPlot/BatmanPlotPost.html)
 ]]
 
@@ -781,12 +786,23 @@ mult(5, d1)
 
 - **Argument verification** is essentially checking the types and dimensions of arguments at the beginning of a function.
 
+- Weak typing also allows functions which can return values depite being given different types as arguments. For example the `NROW()` and `NCOL()` functions (don't use them!!):
+
+.pull-left[.left[
+```{r nrow-ncol, echo = TRUE, eval = TRUE, error = TRUE}
+NROW(matrix(1:16, nrow = 4))
+NROW(1:16)
+NCOL(1:16)
+```
+]]
+
+
 
 ---
 class: left
 
 ### Argument validation
-- For strongly typed languages, this is done by the compiler automatically and does not add overhead to the runtime performance.
+- For strongly typed languages, this is done by the compiler implicitly and does not add overhead to the runtime performance.
 - For weakly typed languages, any code added in the function to check types is executed at runtime and will make your code slow.
 - There is a tradeoff here, fast code with no argument validation or slow code with complete validation.
 
@@ -833,85 +849,207 @@ get_model_info("mazda", case_sens = FALSE)
 ```
 ]]
 
----
-class: center
-
----
-class: center, middle, inverse
-
-# Promises and the ellipsis argument (...)
 
 ---
 class: left
 
-### Global variables are bad
+### Argument validation - speed test
+
+.pull-left[.left[
+```{r arg-validation-speed, echo = TRUE, eval = TRUE}
+library(microbenchmark)
+calc <- function(a, b = 100, d = 10){
+  a * b ^ d    
+}
+
+calc_loop <- function(iter = 1e4){
+  for(i in seq_len(iter)){
+    calc(a = i)
+  }
+}
+microbenchmark(
+  calc_loop()
+)
+```
+]]
+
+.pull-left[.left[
+```{r arg-validation-nochecks-speed, echo = TRUE, eval = TRUE}
+calc_with_checks <- function(a, b = 100, d = 10){
+  
+  if(!"integer" %in% class(a)){
+    stop("`a` does not have class integer", call. = FALSE)
+  }
+  if(!"numeric" %in% class(b)){
+    stop("`b` does not have class numeric", call. = FALSE)
+  }
+  if(!"numeric" %in% class(d)){
+    stop("`d` does not have class numeric", call. = FALSE)
+  }
+  if(length(a) > 1){
+    stop("length of `a` must be 1, you passed a length ",
+         length(a), " vector", call. = FALSE)
+  }
+  if(length(b) > 1){
+    stop("length of `b` must be 1, you passed a length ",
+         length(b), " vector", call. = FALSE)
+  }
+  if(length(d) > 1){
+    stop("length of `d` must be 1, you passed a length ",
+         length(d), " vector", call. = FALSE)
+  }
+  k <- a * b ^ d    
+}
+calc_loop_checks <- function(iter = 1e4){
+  for(i in seq_len(iter)){
+    calc_with_checks(a = i)
+  }
+}
+microbenchmark(
+  calc_loop_checks()
+)
+```
+]]
+
+.pull-full[.left[
+- The code with argument verification is about 5-6 times slower (median).
+- This is only 1 function in 1 loop with only 10,000 iterations.
+- Imagine many functions being called, each with argument verification, and millions of iterations.
+]]
+
+---
+class: center, middle, inverse
+
+# Global variables and Constants
+
+---
+class: left
+
+### Global variables - Avoid!
+
+- **Global variables** are variables which are visible to the whole project, declared outside functions.
+
+- In R, any variable you create in your workspace from the command line is **Global**.
 
 - Global variables are not a good idea in any language
-  - Any function can read or write to them which means the global state of the
-    program can change in many ways at any time
-  - As the project complexity increases, keeping track of these changes becomes
-    extremely difficult and frustrating
-  - Eventually, debugging becomes impossible
 
-- Pass all variables as arguments to functions instead
-  - This can be tedious if you are passing variables through multiple functions
-    in a chain fashion. eg:
-    ```{r chain-passing, echo = TRUE}
-      yy <- function(a, b, d){
-        paste("yy() has arguments:", a, b, d)
-      }
-      j <- 1; k <- 2; a <- 3; b <- 4; d <- 5
-      xx <- function(j, k, a, b, d){
-        paste("xx() has arguments:", j, "and", k, "and", yy(a, b, d))
-      }
-    ```
+  - Any function can read or write to them which means the global state of the program can change in many ways at any time
+  
+  - As the project complexity increases, keeping track of these changes becomes extremely difficult and frustrating
+  
+  - Eventually, debugging becomes impossible
+  
+- Programming in this way is called **Monolithic** programming and was abandoned in the early 1980's.
+
+- Pass all variables as arguments to functions instead.
+
 ---
-class: center
+class: left
+
+### Global variables vs passing variables
+
+.pull-left[.left[
+**With Global variable 'b'**
+```{r pass-variables-global, echo = TRUE, eval = TRUE}
+b <- 2
+
+pow <- function(a){
+  # Having 'b' here without it being an argument is bad!
+  a ^ b
+}
+
+pow_vec <- function(vals){
+  out <- NULL
+  for(i in seq_along(vals)){
+    out[i] <- pow(vals[i])
+  }
+  out
+}
+
+pow_vec(vals = 1:10)
+```
+]]
+
+```{r echo = FALSE, eval = TRUE}
+rm(b)
+```
+
+.pull-left[.left[
+**No Global variables**
+```{r pass-variables, echo = TRUE, eval = TRUE}
+pow <- function(a, b){a ^ b}
+
+pow_vec <- function(vals, b){
+  out <- NULL
+  for(i in seq_along(vals)){
+    out[i] <- pow(vals[i], b)
+  }
+  out
+}
+
+pow_vec(vals = 1:10, b = 2)
+```
+]]
+
+---
+class: center, middle, inverse
+
+# The Ellipsis argument (...)
+
+---
+class: left
 
 ### *Promise already under evaluation* error
-.left[
-Here is an example of some code which will cause a promise error
-```{r promise-error, echo = TRUE, eval = TRUE, error = TRUE}
-user_power <- function(val, pow){
-  val ^ pow
-}
-power_list <- function(lst, ...){
-  purrr::map_dbl(lst, function(list_item = .x, ...){
-    user_power(list_item, ...)
-  }, ...)
-}
-power_list(6:9, 3)
-```
+Here is an example of some code which will cause a **promise already under evaluation** error:
 
-  This is caused by default arguments being set with the form `j = j` in the function declaration and can be easily fixed by changing the argument name like this
-  ```{r fix-promise-error, echo = TRUE, eval = TRUE}
-  j <- function(a, b, func){
-    a + b
-  }
-  k <- function(my_j = j, a, b){
-    my_j(a, b)
-  }
-  k(a = 3, b = 4)
-  ```
-  This can be very difficult to fix properly if you pass these variables through several functions, because you don't want to come up with a new name for the argument in each one. It can get really confusing really fast. The best way to solve this issue is to use the ellipsis argument
-]
+.pull-full[.left[
+```{r promise-error, echo = TRUE, eval = TRUE, error = TRUE}
+j <- 42
+
+foo <- function(j = j){
+  j
+}
+
+
+foo()
+```
+]]
+.pull-full[.left[
+This is caused by default arguments being set with the form `j = j` in the function declaration and can be easily fixed by changing the argument declaration to `k = j`. Use a different variable name in the function than the default value.
+]]
+.pull-left[.left[
+```{r fix-promise-error, echo = TRUE, eval = TRUE}
+j <- 42
+
+foo <- function(k = j){
+  k
+}
+
+foo()
+```
+]]
+.pull-full[.left[
+This can be very difficult to fix properly if you pass these variables through several functions, because you don't want to come up with a new name for the argument in each one. It can get really confusing really fast. The best way to solve this issue is to use the ellipsis argument.
+]]
 
 ---
 class: center
 
-### Fix promise error with the ellipsis argument
-.left[
+### Fix promise errors with the ellipsis argument
+.pull-left[.left[
 ```{r fix-promise-error-ellipsis, echo = TRUE, eval = TRUE}
-j <- function(a, b){
+bar <- function(a, b){
+  message("Inside bar(), a = ", a, ", b = ", b)
   a + b
 }
-k <- function(j, ...){
-  j(...)
-}
-k(j = j, a = 3, b = 4)
-```
 
-]
+foo <- function(bar, x, ...){
+  message("Inside foo(), x = ", x)
+  bar(...)
+}
+foo(bar = j, a = 3, b = 4, x = 99)
+```
+]]
 
 ---
 class: center, middle, inverse
