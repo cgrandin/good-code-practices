@@ -156,7 +156,7 @@ class: left
 
 #### Interpretation
 
-- An interpreter "*compiles*" code line-by-line at run time
+- An interpreter **evaluates** code line-by-line at run time
 
 - Interpreted code is usually platform-independent / compiled code needs to be compiled for a specific CPU
 
@@ -318,6 +318,25 @@ vec2df <- function(vec, nms = NULL){
 }
 ```
 ]
+
+---
+class: left
+
+### Don't use `rm()` to *clear* the workspace, don't *save* the workspace
+
+- You might see `rm(list = ls(all.names = TRUE))` at the beginning of somebody's R script. It clears out all user-defined objects (including hidden) from the workspace
+
+- It is a sign that the person writing the code is *not sure* what variables their code is accessing. To remove doubt, they use this command to clear everything out
+
+- It doesn't start you with a *clean slate*. It leaves things:
+
+  - Packages remain loaded
+  
+  - Options changed remain at their non-default values (`options()`)
+
+- If you are saving your workspace (.RData file) on closing, you are missing the point of using functionalized source code. Objects don't matter, code does. You should be able to re-recreate all objects from your source code
+
+- **To start with a brand new workspace, restart R**. In Rstudio it is Ctrl-Shift-F10. I do this very often, at least 10 times a day
 
 ---
 class: center, middle, inverse, bg_fir
@@ -929,8 +948,6 @@ class: left
 
 - **Global variables** are variables which are visible to the whole project, declared outside functions.
 
-- In R, any variable you create in your workspace from the command line is **Global**.
-
 - Global variables are not a good idea in any language
 
   - Any function can read or write to them which means the global state of the program can change in many ways at any time
@@ -992,6 +1009,39 @@ pow_vec(vals = 1:10, b = 2)
 ]]
 
 ---
+class: left
+
+### Constants
+
+In most languages, there is a CONST type which is like a variable but cannot be changed
+
+- In C++ and many other languages the declaration looks like this:
+
+  ```{cc const-my-const, echo = TRUE, eval = FALSE}
+  const MY_CONSTANT = 42;
+  ```
+
+- Note the capital letters in upper snake case format. This is the way constant names appear in almost all languages
+
+- In R, there is no constant keyword. You must use a global variable and never change it.
+
+  - Note that a global variable cannot be changed from within a function (unless you use `<<-`).
+  
+- To lock the variable, imitating a constant, you can do this:
+    
+  ```{r lockbinding, echo = TRUE, eval = FALSE}
+  a <- 1    
+  lockBinding("a", globalenv())
+  ```
+
+- That will not prevent someone (or some function) from doing this however:
+  
+  ```{r lockbinding-removal, echo = TRUE, eval = FALSE}
+  rm(a)
+  a <- 99
+  ```
+
+---
 class: center, middle, inverse
 
 # The Ellipsis argument (...)
@@ -1035,53 +1085,135 @@ This can be very difficult to fix properly if you pass these variables through s
 ---
 class: center
 
-### Fix promise errors with the ellipsis argument
+### How to fix promise errors with the ellipsis argument
 .pull-left[.left[
-```{r fix-promise-error-ellipsis, echo = TRUE, eval = TRUE}
-bar <- function(a, b){
-  message("Inside bar(), a = ", a, ", b = ", b)
-  a + b
+```{r fix-promise-error-ellipsis, echo = TRUE, eval = TRUE, error = TRUE}
+a <- 42
+
+bar <- function(a = 21){
+  message("Inside bar(), a = ", a)
+  a * a
 }
 
-foo <- function(bar, x, ...){
-  message("Inside foo(), x = ", x)
-  bar(...)
+foo <- function(fun, x, a = a){ #<<
+  message("Inside foo(), x = ", x, ", a = ", a)
+  bar(a = a) #<<
 }
-foo(bar = j, a = 3, b = 4, x = 99)
+
+foo(x = 99, a = 10)
+
+foo(x = 99, a = a)
+
+foo(x = 99)
+```
+]]
+
+.pull-right[.left[
+```{r fix-promise-error-fix-ellipsis, echo = TRUE, eval = TRUE}
+a <- 42
+
+bar <- function(a = 21){
+  message("Inside bar(), a = ", a)
+  a * a
+}
+
+foo <- function(x, ...){ #<<
+  message("Inside foo(), x = ", x, ", a = ", a)
+  bar(...) #<<
+}
+
+foo(x = 99, a = 10)
+
+foo(x = 99, a = a)
+
+foo(x = 99)
 ```
 ]]
 
 ---
 class: center, middle, inverse
 
-# Avoid using `for()` loops
+# All loops are `for()` loops
 
 ---
-class: center
+class: left
 
-### `for()` loops should be avoided, use functional forms instead
-.left[
+### `for()`, `lapply()`, and `map()`
+
 Using `for()` loops come naturally to people familiar with procedural programming, and is more intuitive so newcomers to R tend to use them a lot.
+
+.pull-left[.left[
+A `for()` loop
 ```{r for-loop, echo = TRUE, eval = TRUE}
 # Cube a vector of numbers
 output <- NULL
+
 for(x in 1:10){
   output[x] <- x ^ 3
 }
 print(output)
 ```
+]]
+.pull-right[.left[
 The same loop using base R's `lapply` method:
 ```{r sapply-loop, echo = TRUE, eval = TRUE}
-unlist(lapply(1:10, function(x){x ^ 3}))
+lapply(1:10, function(x){
+  x ^ 3
+}) |> 
+  unlist()
 ```
-The same loop using the package `purrr::map_dbl()` method:
+]]
+.pull-left[.left[
+The same loop using the `purrr::map_dbl()` method:
 ```{r map-loop, echo = TRUE, eval = TRUE}
-purrr::map_dbl(1:10, ~{.x ^ 3})
+purrr::map(1:10, function(x){
+  x ^ 3
+}) |> 
+  unlist()
 ```
-The `purrr::map_dbl` method allows use of `~` as a shorthand form for `function(x)` and each list element is assigned to `.x` by `purrr`.
-]
+]]
+.pull-right[.left[
+Using the `purrr::map_dbl()` method with the function shortcut (`~`):
+```{r map-loop-lambda, echo = TRUE, eval = TRUE}
+purrr::map(1:10, ~{
+  .x ^ 3
+}) |> 
+  unlist()
+```
+]]
+.pull-full[.left[
+The `purrr::map` method allows use of `~` as a shorthand form for `function(x)` and each list element is assigned to `.x`.
+]]
 
 
+---
+class: left
+
+### `apply` methods are not guaranteed to return the correct type
+
+- Here is an example using `sapply()` and `vapply()` compared to `map_lgl()`:
+
+.pull-left[.left[
+The `sapply()` and `vapply()` functions return different types based on the input
+```{r sapply-vapply-bad, echo = TRUE, eval = TRUE}
+sapply(LETTERS[1:3], function(x) {x == "B"})
+
+sapply(LETTERS[0], function(x) {x == "B"})
+
+vapply(LETTERS[1:3], function(x) {x == "B"}, logical(1))
+
+vapply(LETTERS[0], function(x) {x == "B"}, logical(1))
+```
+]]
+
+.pull-left[.left[
+The `map()` commands always return the correct type
+```{r map-good, echo = TRUE, eval = TRUE}
+map_lgl(LETTERS[1:3], function(x) {x == "B"})
+
+map_lgl(LETTERS[0], function(x) {x == "B"})
+```
+]]
 
 ---
 class: center
