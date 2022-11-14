@@ -1,9 +1,9 @@
 ---
 title: "Good Code Practices"
 subtitle: "with a focus on R"
-author: "Chris Grandin"
-institute: "DFO"
-date: "Slides compiled on `r Sys.Date()`"
+author: "Chris Grandin and Andrew Edwards"
+institute: "Pacific Biological Station, Nanaimo, BC"
+date: "National TESA webinar. Slides compiled on `r Sys.Date()`"
 output:
   xaringan::moon_reader:
     css: ["xaringan-themer.css", "inline-code.css", "code-custom.css"]
