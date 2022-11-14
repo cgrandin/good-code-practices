@@ -170,7 +170,7 @@ class: left
 - History and sociology of coding (though I didn't finish it)
 .pull-right[
 ```{r coders-pic, echo = FALSE, eval = TRUE, out.width = 250}
-knitr::include_graphics(here::here("docs/presentation/img/coders-book-cover.jpg"))
+knitr::include_graphics("img/coders-book-cover.jpg")
 ```
 ]
 
@@ -719,7 +719,7 @@ batman(5)
 ```
 
 ```{r batman-equation, out.height = 200}
-knitr::include_graphics(here::here("docs", "presentation", "img", "batman-equation.png"))
+knitr::include_graphics("img/batman-equation.png")
 ```
 
 [Original source code and explanation](https://charlotte-ngs.github.io/BatmanPlot/BatmanPlotPost.html)
