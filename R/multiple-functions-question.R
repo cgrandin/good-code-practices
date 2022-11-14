@@ -37,11 +37,12 @@ func_2(1:4,
 
 # Q1: I've used `vec` in the functions, but also in the main code. What's the best
 #  way to name such an object - is it okay to repeat it like here?
+
 # Q2: The `my_col` and `prefer_col` arguments both refer to colour. Any advice
 #  on whether you should use the same names.
 
 
-
+# ----
 # Ignore this:
 
 ## # Code that runs (normally in separate file)

@@ -94,19 +94,33 @@ class: left
 
 - Many of us are self-taught in computer coding
 
+- "When I wanted to become a marine biologist no-one told me I'd end up spending
+  most of my time writing computer code" -- paraphrasing someone I saw on Twitter (I can't find the
+  original tweet).
+
+--
+
 - Probably all have some bad habits which we could get away with in the past
 
 - But now we share and collaborate on code a lot more (especially through
   GitHub)
 
+--
+
   - bad habits can be annoying for collaborators
+
+--
 
   - bad habits can be annoying for your future self
 
+--
+
   - bad habits lead to wide eyes staring at space (E. Sheeran, respected programmer )
+.pull-right[
 ```{r ed, echo = FALSE, eval = TRUE, out.width = 100}
 knitr::include_graphics("img/ed.jpg")
 ```
+]
 
 ---
 class: left
@@ -117,21 +131,35 @@ Things I figured out over the years
 
 - help others and your future self: README files and documenting code
 
+--
+
 - setting up workflow (having organised folders)
+
+--
 
 - defining variables just once in code
 
+--
+
 - never use `T` and `F` for `TRUE` and `FALSE` -- took me a few hours of
-    debugging once to learn this one
+    debugging once to learn this one the hard way
+
+--
 
 - it is often worth simplifying some code to make it more efficient (not that I
   always do)
 
+--
+
 - had previously thought you're fine to just use `=` instead of `<-`. Oops -- not any more
   (sorry!)
 
+--
+
 - working closely with Chris on Pacific Hake stock assessment has helped my
   coding habits, so thought it worth him sharing some best practices
+
+--
 
 - this is for TESA, and most stock assessment scientists are using R, so we'll
 focus on R, but some tips are applicable for other languages
