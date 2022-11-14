@@ -9,3 +9,4 @@ decription: "A presentation outlining good coding practices, mainly in R."
 remote_theme: jekyll/minima
 exclude:
   - presentation/Good-code-practices.Rmd
+  - presentation/webcam.Rmd
