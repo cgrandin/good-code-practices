@@ -7,6 +7,5 @@ presentation/libs
 default.css
 xaringan-themer.css
 
-_bookdown_files
 *.dll
 *.js
