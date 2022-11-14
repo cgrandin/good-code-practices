@@ -156,6 +156,11 @@ Things I figured out over the years
 
 --
 
+- READ the error messages!! I thought of this while writing this talk, and not
+  reading the error messages.
+
+--
+
 - working closely with Chris on Pacific Hake stock assessment has helped my
   coding habits, so thought it worth him sharing some best practices
 
@@ -163,6 +168,50 @@ Things I figured out over the years
 
 - this is for TESA, and most stock assessment scientists are using R, so we'll
 focus on R, but some tips are applicable for other languages
+
+
+---
+class: left
+
+### Motivation
+
+- History and sociology of coding (though I didn't finish it)
+.pull-right[
+```{r coders-pic, echo = FALSE, eval = TRUE, out.width = 250}
+knitr::include_graphics(here::here("presentation/img/coders-book-cover.jpg"))
+```
+]
+
+- Some good insights and tidbits
+
+- One Facebook engineer checked his contributions to the code
+
+  - Added 391,973 lines
+
+--
+
+  - Removed 509,793 lines!
+
+--
+
+  - So on average he *removed* 39 lines of code per hour.
+
+--
+
+- Common syndrome of people spending ages writing a program to automate a task
+  rather than just "doing the damn thing itself".
+
+   - One guy had to do some ONE-TIME cleaning up of data by hand. Should have taken half a day or so.
+
+--
+
+  - But he wanted to automate it. Took him two weeks, but was a useless tool.
+
+--
+
+- So be careful sometimes. "Perfect is the enemy of good".
+
+
 
 ---
 class: center, middle, inverse
