@@ -2,10 +2,6 @@
 .Rhistory
 .RData
 .Ruserdata
-presentation/libs
-
-default.css
-xaringan-themer.css
 
 *.dll
 *.js
