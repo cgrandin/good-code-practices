@@ -1,0 +1,11 @@
+# Website settings
+title: Good Code Practices
+author:
+  name: Chris Grandin
+  email: chris.grandin@gmail.com
+decription: "A presentation outlining good coding practices, mainly in R."
+
+# Build seettings
+remote_theme: jekyll/minima
+exclude:
+  - presentation/Good-code-practices.Rmd
