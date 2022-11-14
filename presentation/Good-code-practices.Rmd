@@ -15,22 +15,14 @@ output:
       ratio: 16:9
 header-includes:
   - \usepackage{animate}
-
+  
 ---
-class: inverse
+class: inverse center
 
-background-image: url(img/obi-wan.jpg)
-background-size: contain
+### Pacific Biological Station, Nanaimo, B.C.
 
-<style type="text/css">
-code.r{ /* Code block */
-  font-size: 10px;
-}
-h3{
-  margin-bottom: 0;
-  padding: 0;
-}
-</style>
+![Image Title](img/pbs.png){width=250px}
+
 
 ```{r setup, include=FALSE, echo=FALSE, fig.width=8, fig.height=8}
 # paste this into the console before running `xaringan::inf_mr("twg_01.Rmd")`
@@ -211,6 +203,27 @@ knitr::include_graphics(here::here("presentation/img/coders-book-cover.jpg"))
 
 - So be careful sometimes. "Perfect is the enemy of good".
 
+
+---
+class: center, middle, inverse
+
+### On to the code...
+
+---
+class: inverse
+
+background-image: url(img/obi-wan.jpg)
+background-size: contain
+
+<style type="text/css">
+code.r{ /* Code block */
+  font-size: 10px;
+}
+h3{
+  margin-bottom: 0;
+  padding: 0;
+}
+</style>
 
 
 ---
@@ -1045,7 +1058,7 @@ class: left
 .pull-left[.left[
 **With Global variable 'b'**
 ```{r pass-variables-global, echo = TRUE, eval = TRUE}
-b <- 2
+b <- 2 #<<
 
 pow <- function(a){
   # Having 'b' here without it being an argument is bad!
@@ -1071,7 +1084,9 @@ rm(b)
 .pull-left[.left[
 **No Global variables**
 ```{r pass-variables, echo = TRUE, eval = TRUE}
-pow <- function(a, b){a ^ b}
+pow <- function(a, b){
+  a ^ b
+}
 
 pow_vec <- function(vals, b){
   out <- NULL
@@ -1111,7 +1126,7 @@ In most languages, there is a CONST type which is like a variable but cannot be 
   lockBinding("a", globalenv())
   ```
 
-- That will not prevent someone (or some function) from doing this however:
+-  However, that will not prevent someone (or some function) from doing this:
 
   ```{r lockbinding-removal, echo = TRUE, eval = FALSE}
   rm(a)
@@ -1121,7 +1136,64 @@ In most languages, there is a CONST type which is like a variable but cannot be 
 ---
 class: center, middle, inverse
 
-# The Ellipsis argument (...)
+# The Ellipsis parameter (...)
+
+---
+class: left
+
+### The Ellipsis parameter (...) - explained
+
+- The `...` parameter captures arguments passed into a function which has no associated named parameters.
+
+- The `...` parameter can be passed on from one function as an argument to another.
+
+- If a function does not have **ALL** arguments contained in the passed in `...` as parameters in its declaration, an error will be thrown.
+
+- To see the arguments passed in `...`, use `list(...)` within a function when `browser()` has stopped execution.
+
+.pull-left[.left[
+**Error due to passing extra arguments into `func_1()`**
+```{r ellipsis-basic-error, echo = TRUE, eval = TRUE, error = TRUE}
+
+func_1 <- function(x, b){
+  message("In func_run(), b = ", b, ", x = ", x)
+}
+
+func_2 <- function(d){
+  message("In func_run(), d = ", d)
+}
+
+func_run <- function(a, b, ...){
+  message("In func_run(), a = ", a, ", b = ", b)  
+  func_1(b = b, ...)
+  func_2(d = d, ...)
+}
+
+func_run(a = 1, b = 2, d = 3, x = 42, y = 43)
+```
+]]
+
+.pull-right[.left[
+**Add Ellipsis parameters to absorb extra arguments**
+```{r ellipsis-basic-corrected, echo = TRUE, eval = TRUE}
+
+func_1 <- function(x, b, ...){ #<<
+  message("In func_run(), b = ", b, ", x = ", x)
+}
+
+func_2 <- function(d, ...){ #<<
+  message("In func_run(), d = ", d)
+}
+
+func_run <- function(a, b, ...){
+  message("In func_run(), a = ", a, ", b = ", b)
+  func_1(b, ...)
+  func_2(d, ...)
+}
+
+func_run(a = 1, b = 2, d = 3, x = 42, y = 43)
+```
+]]
 
 ---
 class: left
@@ -1142,7 +1214,7 @@ foo()
 ```
 ]]
 .pull-full[.left[
-This is caused by default arguments being set with the form `j = j` in the function declaration and can be easily fixed by changing the argument declaration to `k = j`. Use a different variable name in the function than the default value.
+This is caused by parameters being set to defaults with the same name (e.g. `j = j`) in the function declaration and can be easily fixed by changing the parameter declaration to `k = j` or `j = k`. Use a different variable name in the function than the name of the variable containing the default value.
 ]]
 .pull-left[.left[
 ```{r fix-promise-error, echo = TRUE, eval = TRUE}
@@ -1156,14 +1228,15 @@ foo()
 ```
 ]]
 .pull-full[.left[
-This can be very difficult to fix properly if you pass these variables through several functions, because you don't want to come up with a new name for the argument in each one. It can get really confusing really fast. The best way to solve this issue is to use the ellipsis argument.
+This can be very difficult to fix properly if you pass these variables through several functions, because you don't want to come up with a new name for the parameter in each one. It can get really confusing really fast. The best way to solve this issue is to use the ellipsis parameter.
 ]]
 
 ---
 class: center
 
-### How to fix promise errors with the ellipsis argument
+### How to fix promise errors with the ellipsis parameter
 .pull-left[.left[
+** Without the ellipsis parameter**
 ```{r fix-promise-error-ellipsis, echo = TRUE, eval = TRUE, error = TRUE}
 a <- 42
 
@@ -1186,6 +1259,7 @@ foo(x = 99)
 ]]
 
 .pull-right[.left[
+** With the ellipsis parameter**
 ```{r fix-promise-error-fix-ellipsis, echo = TRUE, eval = TRUE}
 a <- 42
 
@@ -1210,12 +1284,83 @@ foo(x = 99)
 ---
 class: center, middle, inverse
 
+# Tibbles
+
+---
+class: left
+
+### Tibbles - explained
+
+- **tibbles** are just **data.frames** with some special output properties so that viewing them in the console is much nicer. To convert a data frame to a tibble, use `tibble::as_tibble()`.
+
+- **tibbles** only show the first ten rows so the column headers don't run off the top of the screen, and each column type is shown at the top. Negative numbers are colored red (in RStudio).
+
+- **tibbles** do not change any data type from its original source. `data.frame()` does this with its argument `stringsAsFactors`.
+
+- **.red[BEWARE]** If you use data frames (not tibbles), the function `data.frame()` changed its argument `stringsAsFactors` to `FALSE` as of R 4.0.0
+
+--
+
+.pull-left[.left[
+**Without row names**
+```{r convert-to-tibble-iris, echo = TRUE, eval = TRUE}
+iris_tibble <- iris |> tibble::as_tibble() #<<
+knitr::kable(iris_tibble, format = "html") |> 
+  kableExtra::kable_styling(font_size = 12)
+```
+]]
+
+.pull-right[.left[
+**Convert row names into column**
+```{r convert-to-tibble-mtcars, echo = TRUE, eval = TRUE}
+mtcars_tibble <- mtcars |> tibble::as_tibble(rownames = "model") #<<
+knitr::kable(mtcars_tibble, format = "html") |> 
+  kableExtra::kable_styling(font_size = 12)
+```
+]]
+
+---
+class: left
+
+### Tibbles - creation
+Making a tibble from scratch is the same as making a `data.frame`. This code makes a tibble of numbers which follow **Benford's law** and plots them using `ggplot`:
+.pull-left[.left[
+```{r make-tibble, echo = TRUE, fig.show = "hide"}
+num_draws <- 100000
+
+df <- tibble::tibble(num = 10 ^ runif(num_draws)) |> #<<
+  mutate(num_char = as.character(num)) |> 
+  mutate(num_char = stringr::str_sub(num_char, 1, 1)) |> 
+  select(-num) |> 
+  table()
+df <- df / sum(df)
+df <- df |> 
+  tibble::as_tibble()  #<<
+
+ggplot(df, aes(x = num_char, y = n)) + 
+  geom_bar(stat="identity",
+           fill = "#0000FF4D",
+           color = "black") +
+  scale_y_continuous(labels = scales::comma) +
+  ylab("Probability") +
+  xlab("First digit in number")
+```
+]]
+
+.pull-right[.left[
+```{r make-tibble-fig, eval = TRUE, ref.label = "make-tibble", out.height = 350}
+```
+]]
+
+---
+class: center, middle, inverse
+
 # All loops are `for()` loops
 
 ---
 class: left
 
-### `for()`, `lapply()`, and `map()`
+### `for()`, `lapply()`, and `purrr::map()`
 
 Using `for()` loops come naturally to people familiar with procedural programming, and is more intuitive so newcomers to R tend to use them a lot.
 
@@ -1243,7 +1388,7 @@ lapply(1:10, function(x){
 .pull-left[.left[
 The same loop using the `purrr::map_dbl()` method:
 ```{r map-loop, echo = TRUE, eval = TRUE}
-purrr::map(1:10, function(x){
+purrr::map(1:10, function(x){ #<<
   x ^ 3
 }) |>
   unlist()
@@ -1252,16 +1397,15 @@ purrr::map(1:10, function(x){
 .pull-right[.left[
 Using the `purrr::map_dbl()` method with the function shortcut (`~`):
 ```{r map-loop-lambda, echo = TRUE, eval = TRUE}
-purrr::map(1:10, ~{
+purrr::map(1:10, ~{ #<<
   .x ^ 3
 }) |>
   unlist()
 ```
 ]]
 .pull-full[.left[
-The `purrr::map` method allows use of `~` as a shorthand form for `function(x)` and each list element is assigned to `.x`.
+The `purrr::map()` method allows use of `~` as a shorthand form for `function(x)` and each list element is assigned to `.x`.
 ]]
-
 
 ---
 class: left
@@ -1295,139 +1439,99 @@ purrr::map_lgl(LETTERS[0], function(x) {x == "B"})
 ---
 class: left
 
-### Tibbles
+### Using `purrr::imap()` and `purrr::map2()`
+One thing that come up quite often is that you have a list of data frames that need the list element number or list names appended to the individual data frames. `imap()` supplies the names of the list elements. If there are no names, it supplies the element numbers. `map2()` can be guaranteed to supply the list element numbers.
 
-**tibbles** are just **data.frames** with some special output properties so that viewing them in the console is much nicer. To convert a data frame to a tibble, use `tibble::as_tibble()`.
-
-**tibbles** only show the first ten rows by default so the header doesn't run off the screen, and each column type is shown at the top. Seeing the column type is highly useful! Also, negative numbers are colored red (in RStudio).
+One reason this happens is if you have N simulations and you want to append the simulation number to each data frame, and then merge those data frames into one large one so that the data are in the correct format for `ggplot` plots.
 .pull-left[.left[
-```{r convert-to-tibble, echo = TRUE, eval = TRUE}
-iris %>% as_tibble()
+**Using `imap()`**
+```{r using-imap, echo = TRUE, eval = TRUE, results = "FALSE"}
+# Split the mtcars data frame by column `cyl` into a list of data frames
+lst <- mtcars |> 
+  tibble::as_tibble(rownames = "model") |> 
+  select(-c(vs, qsec, am, drat)) |>
+  split(~cyl)
+
+df_imap <- purrr::imap(lst, ~{ #<<
+  .x |>
+    dplyr::mutate(grp = .y) # Add the group name
+}) |> 
+  purrr::map_df(~{.x}) # Bind all rows
+```
+]]
+
+.pull-right[.left[
+**Using `map2()`**
+```{r using-map2, echo = TRUE, eval = TRUE, results = "FALSE"}
+# Split the mtcars data frame by column `cyl` into a list of data frames
+lst <- mtcars |> 
+  tibble::as_tibble(rownames = "model") |> 
+  select(-c(vs, qsec, am, drat)) |>
+  split(~cyl)
+
+df_map2 <- purrr::map2(lst, seq_along(lst), ~{ #<<
+  .x |>
+    dplyr::mutate(grp = .y) # Add the group number
+}) |> 
+  purrr::map_df(~{.x}) # Bind all rows
 ```
 ]]
 
 ---
 class: left
 
-### Tibbles 
-Making a tibble from scratch is the same as making a `data.frame`. This code makes a tibble of numbers 10 raised to the power of random numbers between 0 and 1 and plots the distribution of the first digit of the number using `ggplot`:
+### Using `purrr::imap()` and `purrr::map2()` - output
 .pull-left[.left[
-```{r make-tibble, echo = TRUE, eval = TRUE, out.height = 350}
-num_draws <- 100000
-
-df <- tibble::tibble(num = 10 ^ runif(num_draws)) |> 
-  mutate(num_char = as.character(num)) |> 
-  mutate(num_char = stringr::str_sub(num_char, 1, 1)) |> 
-  select(-num) |> 
-  table()
-df <- df / sum(df)
-df <- df |> 
-  as_tibble()
-
-ggplot(df, aes(x = num_char, y = n)) + 
-  geom_bar(stat="identity",
-           fill = "#0000FF4D",
-           color = "black") +
-  scale_y_continuous(labels = scales::comma) +
-  ylab("Probability") +
-  xlab("First digit in number")
+**Using `imap(lst)`**
+```{r using-imap-output, echo = FALSE, eval = TRUE}
+knitr::kable(df_imap, format = "html") |> 
+  kableExtra::kable_styling(font_size = 12) |> 
+  kableExtra::column_spec(which(names(df_imap) == "grp"),
+                          bold = TRUE, color = "black", background = "yellow") |> 
+  kableExtra::column_spec(which(names(df_imap) == "cyl"),
+                          bold = TRUE, color = "black", background = "yellow")
+```
+]]
+.pull-right[.left[
+**Using `map2(lst, seq_along(lst))`**
+```{r using-map2-output, echo = FALSE, eval = TRUE}
+knitr::kable(df_map2, format = "html") |> 
+  kableExtra::kable_styling(font_size = 12) |> 
+  kableExtra::column_spec(which(names(df_imap) == "grp"),
+                          bold = TRUE, color = "black", background = "yellow") |> 
+  kableExtra::column_spec(which(names(df_imap) == "cyl"),
+                          bold = TRUE, color = "black", background = "yellow")
 ```
 ]]
 
 ---
-class: center
-
-### Using `purrr::map2()`
-.left[
-One thing that come up quite often is that you have a list of data frames that need the list index number appended to the individual data frames.
-
-One reason this happens is if you have N simulations and you want to append the simulation number to each data frame, and then merge those data frames into one large one so that the data are in the correct format for `ggplot` plots.
-```{r fake-sim, echo = TRUE, eval = FALSE}
-# Split the mtcars data frame by column `carb` into a list of data frames
-lst <- mtcars %>%
-  tibble::as_tibble(rownames = "make") %>%
-  dplyr::group_by(carb) %>%
-  dplyr::group_split()
-
-df <- purrr::map2(lst, seq_along(lst), ~{
-  .x %>% dplyr::mutate(group_num = .y)
-}) %>%
-  purrr::map_df(~{.x})
-
-print(df, n = 100)
-```
-]
-
----
-class: center
-
-### Using `purrr::map2()`
-.left[
-```{r table-fake-sim, echo = FALSE, eval = TRUE, ref.label = "fake-sim"}
-```
-]
-
----
-class: center
+class: left
 
 ### Using `map()` with ellipsis passed to internal functions
-.left[
+
 This is a common thing you need to do if you're using the `map()` functions but strangely there are no examples that I could find online for this. Using this method you can pass N arguments into the function which is applied to each element of the list.
 
-```{r map-ellipsis, echo = TRUE, eval = TRUE, error = TRUE}
+.pull-full[.left[
+```{r map-ellipsis, echo = TRUE, eval = TRUE}
 ultimate_power <- function(val, pow){
   val ^ pow
 }
-power_list <- function(lst, ...){
+
+power_vec <- function(lst, ...){
+  
   purrr::map_dbl(lst, function(list_item = .x, ...){
     ultimate_power(list_item, ...)
   }, ...)
+  
 }
-power_list(6:9, 3)
+
+power_vec(1:10, 3)
+
+power_vec(11:20, 4)
+
+power_vec(21:30, 5)
 ```
-]
-
-
----
-class: center
-
-### Power function is less efficient than multiplying
-.left[
-Squared operation
-```{r power-function-optim, echo = FALSE, eval = TRUE}
-loop_len <- 1000
-sz <- 100000
-a <- sample(1000, size = sz, replace = TRUE)
-f <- function (n) for (i in 1:n) d <- a ^ 2
-g <- function (n) for (i in 1:n) d <- a * a
-system.time(f(loop_len))
-system.time(g(loop_len))
-```
-Cubed operation
-```{r power-function-optim-2, echo = FALSE, eval = TRUE}
-a <- sample(1000, size = sz, replace = TRUE)
-f <- function (n) for (i in 1:n) d <- a ^ 3
-g <- function (n) for (i in 1:n) d <- a * a * a
-h <- function (n) for (i in 1:n) d <- (a ^ 2) * a
-system.time(f(loop_len))
-system.time(g(loop_len))
-system.time(h(loop_len))
-```
-Looking at the **user** time, the squared operation is faster than multiplying the number with itself. It is a special case of power which has been optimized in R. For higher degrees of power, it is much faster to use multiplication (7.8x faster) and the squared operation with multiplication (9.6x faster) rather than calculate using the power function (^) itself.
-]
-
----
-class: left
-
-# References for images
-
-- [Obi Wan](https://starecat.com/when-you-read-some-incredibly-bad-code-thinking-what-a-moron-wrote-this-but-halfway-through-it-starts-to-become-familiar-obi-wan-kenobi-well-of-course-i-know-him-hes-me)
-
-- [Animated fire](http://clipart-library.com/clipart/n932465.htm)
-
-- [The Matrix](https://en.wikipedia.org/wiki/File:Computer-screen-code-glitch-animation-gif-background-free.gif)
-
-- [Rotating head](https://giphy.com/gifs/hacker-hack-hacking-4OAxDXv4RdUeg38JYi)
+]]
 
 ---
 class: center
