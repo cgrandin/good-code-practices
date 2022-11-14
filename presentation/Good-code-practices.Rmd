@@ -1216,36 +1216,46 @@ map_lgl(LETTERS[0], function(x) {x == "B"})
 ]]
 
 ---
-class: center
+class: left
 
 ### Tibbles
-.left[
+
 **tibbles** are just **data.frames** with some special output properties so that viewing them in the console is much nicer. To convert a data frame to a tibble, use `tibble::as_tibble()`.
 
 **tibbles** only show the first ten rows by default so the header doesn't run off the screen, and each column type is shown at the top. Seeing the column type is highly useful! Also, negative numbers are colored red (in RStudio).
+.pull-left[.left[
 ```{r convert-to-tibble, echo = TRUE, eval = TRUE}
 iris %>% as_tibble()
 ```
-]
+]]
 
 ---
-class: center
+class: left
 
-### Tibbles (2)
-.left[
-Making a tibble from scratch is the same as making a `data.frame`. This code makes a tibble of random letters and numbers and plots the distribution of random letters drawn using `ggplot`:
+### Tibbles 
+Making a tibble from scratch is the same as making a `data.frame`. This code makes a tibble of numbers 10 raised to the power of random numbers between 0 and 1 and plots the distribution of the first digit of the number using `ggplot`:
+.pull-left[.left[
 ```{r make-tibble, echo = TRUE, eval = TRUE, out.height = 350}
-num_rows <- 1000
+num_draws <- 100000
 
-# tibble::tibble(row = 1:num_rows,
-#                number = sample(1:50, num_rows, replace = TRUE),
-#                letter = letters[sample(1:26, num_rows, replace = TRUE)]) %>%
-#   mutate(number = as.character(number)) %>%
-#   tidyr::pivot_longer(cols = c("number", "letter"), names_to = "type", values_to = "value") %>%
-#   ggplot2::ggplot(aes(x = value, y = type)) +
-#   ggplot2::geom_bar(fill = "#0000FF4D")
+df <- tibble::tibble(num = 10 ^ runif(num_draws)) |> 
+  mutate(num_char = as.character(num)) |> 
+  mutate(num_char = stringr::str_sub(num_char, 1, 1)) |> 
+  select(-num) |> 
+  table()
+df <- df / sum(df)
+df <- df |> 
+  as_tibble()
+
+ggplot(df, aes(x = num_char, y = n)) + 
+  geom_bar(stat="identity",
+           fill = "#0000FF4D",
+           color = "black") +
+  scale_y_continuous(labels = scales::comma) +
+  ylab("Probability") +
+  xlab("First digit in number")
 ```
-]
+]]
 
 ---
 class: center
